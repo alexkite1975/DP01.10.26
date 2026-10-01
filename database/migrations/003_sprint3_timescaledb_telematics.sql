@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS vehicle_telemetry_history (time TIMESTAMPTZ NOT NULL, vehicle_id VARCHAR(64), driver_id VARCHAR(64), coordinates GEOMETRY(Point, 4326), speed_kmh NUMERIC(5,2), heading_degrees INT, ignition_status VARCHAR(16), fuel_level_percent NUMERIC(4,1), odometer_km NUMERIC(10,1));
