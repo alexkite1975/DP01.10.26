@@ -1,5 +1,8 @@
 'use client';
 import { SiteReviews } from './SiteReviews';
+import { DriverSafetyShieldHub } from './safety/DriverSafetyShieldHub';
+import { VehicleCheck } from './VehicleCheck';
+import { DvsaCompliance } from './DvsaCompliance';
 
 import React, { useState, useEffect } from 'react';
 import { 
@@ -10,7 +13,7 @@ import {
   Building, Send, CheckSquare, Square, X, PlusCircle
 } from 'lucide-react';
 
-type ModuleView = 
+type ModuleView = 'safety-shield' | 'vehicle-check' | 'compliance' | 
   | 'cockpit'           
   | 'live-shift'        
   | 'article-12'        
