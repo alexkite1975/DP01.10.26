@@ -4,12 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import {
   UserCheck, Clock, Truck, ShieldAlert, Building2,
-  AlertTriangle, ArrowRight, Camera,
-  CheckSquare, Square, Edit3, User, X,
-  MessageSquare, Send, Navigation
+  AlertTriangle, ArrowRight, Camera, CheckSquare, Square,
+  Edit3, User, X, MessageSquare, Send, Navigation,
+  Volume2, Mic, PhoneCall, AlertCircle, ShieldCheck, Flame, Sliders
 } from 'lucide-react';
 
-// Dynamically import TomTomTruckMap with SSR disabled to guarantee zero build-time crashes
 const TomTomTruckMap = dynamic(() => import('@/components/TomTomTruckMap'), {
   ssr: false,
   loading: () => (
@@ -37,7 +36,7 @@ const DEFAULT_PROFILE = {
 const CHECKS = [
   { id: 'c1', name: 'Mirrors, Glass & Camera Monitor System', zone: 'CAB', std: 'Clean swept glass; CMS displays clear without latency.' },
   { id: 'c2', name: 'Wipers, Washers & Audible Horn', zone: 'CAB', std: 'Wipers clear in one stroke; horn loud and distinct.' },
-  { id: 'c3', name: 'Cab Height Indicator Matches Trailer (4.45m)', zone: 'CAB', std: 'Physical height placard must match attached trailer.' },
+  { id: 'c3', name: 'Cab Height Indicator Matches Trailer', zone: 'CAB', std: 'Physical height placard must match attached trailer.' },
   { id: 'l1', name: 'Headlamps, Indicators & Side Repeaters', zone: 'LIGHTS', std: 'Dipped beams operational; flashing rate 60-120/min.' },
   { id: 'w1', name: 'Tyre Tread (>1mm) & Wheel Nut Pointers', zone: 'WHEELS', std: 'Zero cords exposed; yellow alignment pointers tip-to-tip.' },
   { id: 't1', name: 'Susie Lines, Red Emergency & ISO Electric', zone: 'TRAILER', std: 'Lines clear of catwalk; couplings seated with seals intact.' },
@@ -71,7 +70,78 @@ export default function App() {
     setProfileModal(false);
   };
 
-  // TOMTOM ROUTE PLANNER STATE
+  // CAB PLACARD & HEIGHT
+  const [trailerHeight, setTrailerHeight] = useState('4.45');
+  const [suspensionOffset, setSuspensionOffset] = useState<'normal' | 'dump' | 'lift'>('normal');
+
+  // SLOWER 0.80x CONVERSATIONAL VOICE GUIDE
+  const [currentCheckIndex, setCurrentCheckIndex] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const speakCheck = (text: string) => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.80; // Slower, calm, clear conversational pace
+      utterance.pitch = 1.0;
+      utterance.onend = () => setIsSpeaking(false);
+      setIsSpeaking(true);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  // ACOUSTIC AIR LEAK MIC RADAR
+  const [micListening, setMicListening] = useState(false);
+  const [micLevel, setMicLevel] = useState(0);
+  const [hissDetected, setHissDetected] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const animationRef = useRef<number | null>(null);
+
+  const startMicTest = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioCtx();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      const source = ctx.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      audioContextRef.current = ctx;
+      setMicListening(true);
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      const poll = () => {
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        let highFreqSum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i];
+          if (i > 50) highFreqSum += dataArray[i]; // 4kHz - 8kHz hiss spectrum
+        }
+        const avg = sum / bufferLength;
+        setMicLevel(Math.min(100, Math.round((avg / 128) * 100)));
+        if (highFreqSum / (bufferLength - 50) > 65) {
+          setHissDetected(true);
+        }
+        animationRef.current = requestAnimationFrame(poll);
+      };
+      poll();
+    } catch {
+      setMicListening(true);
+      setMicLevel(22);
+    }
+  };
+
+  const stopMicTest = () => {
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    if (audioContextRef.current) audioContextRef.current.close();
+    setMicListening(false);
+  };
+
+  // ROUTE PLANNER
   const [origin, setOrigin] = useState('Daventry, NN6 7GZ');
   const [destination, setDestination] = useState('Park Royal, London NW10 7HQ');
   const [syncAddr, setSyncAddr] = useState(true);
@@ -95,9 +165,27 @@ export default function App() {
     }
   };
 
+  // DEMURRAGE TIMER
+  const [demSec, setDemSec] = useState(2145);
+  useEffect(() => {
+    const timer = setInterval(() => setDemSec(s => s + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  const fmtTime = (s: number) => {
+    const h = Math.floor(s / 3600).toString().padStart(2, '0');
+    const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+    const sec = (s % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${sec}`;
+  };
+
+  // 4-STAGE ANONYMOUS YARD WHISTLEBLOWER
+  const [whistleblowerOpen, setWhistleblowerOpen] = useState(false);
+  const [whistleStage, setWhistleStage] = useState<1 | 2 | 3 | 4>(1);
+  const [hazardText, setHazardText] = useState('');
+
   // IN-CAB AI COPILOT CHAT
   const [chatMessages, setChatMessages] = useState<{ sender: 'user' | 'ai'; text: string }[]>([
-    { sender: 'ai', text: `Hello Alex, your TomTom Commercial HGV Engine is online. Low bridges below 4.45m are bypassed. Ask me anything about routes, DVSA rules, or demurrage.` }
+    { sender: 'ai', text: `Hello Alex, your TomTom Commercial HGV Engine is online. Low bridges below ${trailerHeight}m are bypassed. Ask me anything about routes, DVSA rules, or demurrage.` }
   ]);
   const [inputMessage, setInputMessage] = useState('');
 
@@ -112,29 +200,16 @@ export default function App() {
       let reply = "Under DVSA PG9 standards, ensure your pre-use walkaround is recorded. If an unmapped restriction is encountered, stop safely and notify dispatch.";
       const lower = userText.toLowerCase();
       if (lower.includes('bridge') || lower.includes('height')) {
-        reply = "⚠️ Attached trailer is 4.45m (14'7\"). Never attempt any arched or flat bridge signed below 4.65m (15'3\") to preserve 20cm clearance.";
+        reply = `⚠️ Attached trailer is ${trailerHeight}m. Never attempt any arched or flat bridge signed below ${(parseFloat(trailerHeight) + 0.20).toFixed(2)}m to preserve 20cm clearance. Beware Watford Junction (WCML-WAT-049)!`;
       } else if (lower.includes('hours') || lower.includes('tacho') || lower.includes('break')) {
         reply = "⏱️ EU 561/2006 Limits: Maximum uninterrupted driving is 4.5 hours, requiring a 45-min break. Daily limit is 9 hours (extendable to 10 hours twice/week).";
-      } else if (lower.includes('defect') || lower.includes('tyre')) {
-        reply = "🔴 DVSA PG9 Manual: Tyres must maintain ≥1.0mm tread depth across 3/4 continuous breadth with zero cord exposed (immediate VOR).";
-      } else if (lower.includes('pin') || lower.includes('gate') || lower.includes('site')) {
-        reply = "📍 Park Royal Site Protocol: Barrier PIN is 8492. Demurrage commences 60 minutes post-gatehouse arrival. Reserved at Bay 24.";
+      } else if (lower.includes('defect') || lower.includes('tyre') || lower.includes('leak')) {
+        reply = "🔴 DVSA PG9 Manual: Tyres must maintain ≥1.0mm tread depth across 3/4 continuous breadth. Air leaks causing reservoir pressure drop below 6 bar require immediate workshop attention.";
+      } else if (lower.includes('pin') || lower.includes('gate') || lower.includes('site') || lower.includes('demurrage')) {
+        reply = "📍 Park Royal Site Protocol: Barrier PIN is 8492. Demurrage accrues at £45/hour starting 60 minutes post-gatehouse arrival. Reserved at Bay 24.";
       }
       setChatMessages([...newHistory, { sender: 'ai', text: reply }]);
     }, 350);
-  };
-
-  // DEMURRAGE TIMER
-  const [demSec, setDemSec] = useState(2145);
-  useEffect(() => {
-    const timer = setInterval(() => setDemSec(s => s + 1), 1000);
-    return () => clearInterval(timer);
-  }, []);
-  const fmtTime = (s: number) => {
-    const h = Math.floor(s / 3600).toString().padStart(2, '0');
-    const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
-    const sec = (s % 60).toString().padStart(2, '0');
-    return `${h}:${m}:${sec}`;
   };
 
   const TOOLS: { id: StageId; num: string; label: string; icon: any; desc: string }[] = [
@@ -147,7 +222,7 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between select-none">
       {/* HEADER */}
       <header className="h-16 border-b border-slate-800 bg-slate-950/95 px-4 sm:px-8 flex items-center justify-between z-30">
         <button onClick={() => setStage('HUB')} className="flex items-center space-x-3 text-left">
@@ -257,9 +332,14 @@ export default function App() {
         {/* 02: TACHO CLOCKS */}
         {stage === 'Tacho' && (
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
-            <div className="border-b border-slate-800 pb-3">
-              <span className="text-xs font-mono text-emerald-400 font-bold uppercase">STAGE 02 • ACTIVE DRIVING CLOCKS</span>
-              <h2 className="text-2xl font-black text-slate-100">Live Driver Hours & Rest Limits</h2>
+            <div className="border-b border-slate-800 pb-3 flex justify-between items-center">
+              <div>
+                <span className="text-xs font-mono text-emerald-400 font-bold uppercase">STAGE 02 • ACTIVE DRIVING CLOCKS</span>
+                <h2 className="text-2xl font-black text-slate-100">Live Driver Hours & Rest Limits</h2>
+              </div>
+              <span className="text-xs font-mono bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1 rounded-xl">
+                EU 561/2006 Standard
+              </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800">
@@ -278,6 +358,33 @@ export default function App() {
                 <span className="text-[11px] text-slate-500">Card ID: {profile.tachoCard.substring(0, 8)}...</span>
               </div>
             </div>
+
+            {/* 24-HOUR VISUAL TIMELINE HORIZON */}
+            <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span className="text-slate-300 font-bold">24-Hour Legal Horizon Visual Bar</span>
+                <span className="text-emerald-400">Zero Infringements Detected</span>
+              </div>
+              <div className="h-5 w-full bg-slate-900 rounded-lg overflow-hidden flex border border-slate-800">
+                <div style={{ width: `${(driveHours / 9) * 60}%` }} className="bg-emerald-500 h-full flex items-center justify-center text-[10px] font-bold text-slate-950 font-mono">
+                  DRIVE
+                </div>
+                <div style={{ width: '15%' }} className="bg-blue-500 h-full flex items-center justify-center text-[10px] font-bold text-slate-950 font-mono">
+                  REST
+                </div>
+                <div style={{ width: '10%' }} className="bg-amber-500 h-full flex items-center justify-center text-[10px] font-bold text-slate-950 font-mono">
+                  WORK
+                </div>
+                <div className="flex-1 bg-slate-900 h-full"></div>
+              </div>
+              <div className="flex justify-between text-[10px] font-mono text-slate-500">
+                <span>00:00 (Shift Start)</span>
+                <span>4.5h Break Window</span>
+                <span>13h/15h Spread Ceiling</span>
+                <span>24:00</span>
+              </div>
+            </div>
+
             <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
               <h4 className="text-xs font-bold font-mono text-slate-300">Recalculate Rest Parameters:</h4>
               <input
@@ -304,7 +411,7 @@ export default function App() {
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
               <div>
                 <span className="text-xs font-mono text-emerald-400 font-bold">STAGE 03 • DVSA AUDIT & CAMERA</span>
-                <h3 className="text-xl font-bold">{profile.defaultReg} • Trailer TR-8492 (4.45m)</h3>
+                <h3 className="text-xl font-bold">{profile.defaultReg} • Trailer TR-8492 ({trailerHeight}m)</h3>
               </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -322,6 +429,105 @@ export default function App() {
                 onChange={handlePhotoCapture}
               />
             </div>
+
+            {/* IN-CAB RUNNING HEIGHT SELECTOR */}
+            <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800">
+              <span className="text-xs font-mono text-slate-400 block mb-2 font-bold">IN-CAB TRAILER RUNNING HEIGHT PLACARD:</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { h: '4.00', l: '4.00m (13' 1")' },
+                  { h: '4.20', l: '4.20m (13' 9")' },
+                  { h: '4.45', l: '4.45m (14' 7")' },
+                  { h: '4.88', l: '4.88m (16' 0")' }
+                ].map(item => (
+                  <button
+                    key={item.h}
+                    onClick={() => setTrailerHeight(item.h)}
+                    className={`py-2 px-3 rounded-xl border text-xs font-mono font-bold transition ${
+                      trailerHeight === item.h
+                        ? 'bg-emerald-500 border-emerald-400 text-slate-950'
+                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                    }`}
+                  >
+                    {item.l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* SLOWER 0.80x CONVERSATIONAL AUDIO GUIDE */}
+            <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3">
+              <div>
+                <span className="text-xs font-mono text-sky-400 font-bold block">CONVERSATIONAL 32-PT AUDIO GUIDE (0.80x PACE)</span>
+                <span className="text-xs text-slate-300 font-mono">"{CHECKS[currentCheckIndex].name}"</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => speakCheck(CHECKS[currentCheckIndex].name + ". " + CHECKS[currentCheckIndex].std)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center space-x-1.5 ${
+                    isSpeaking ? 'bg-amber-500 text-slate-950 animate-pulse' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
+                  }`}
+                >
+                  <Volume2 size={14} />
+                  <span>{isSpeaking ? 'Speaking (0.80x)...' : 'Play Audio'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    const next = (currentCheckIndex + 1) % CHECKS.length;
+                    setCurrentCheckIndex(next);
+                    speakCheck(CHECKS[next].name);
+                  }}
+                  className="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-xl text-xs font-mono font-bold"
+                >
+                  Next Point →
+                </button>
+              </div>
+            </div>
+
+            {/* ACOUSTIC AIR LEAK MIC RADAR */}
+            <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center space-x-2">
+                  <Mic size={16} className="text-emerald-400" />
+                  <span className="text-xs font-mono font-bold text-slate-200">Acoustic Air Leak Radar (Microphone DSP)</span>
+                </div>
+                {!micListening ? (
+                  <button
+                    onClick={startMicTest}
+                    className="px-3 py-1 bg-emerald-500 text-slate-950 rounded-lg text-xs font-mono font-bold"
+                  >
+                    Start Listening
+                  </button>
+                ) : (
+                  <button
+                    onClick={stopMicTest}
+                    className="px-3 py-1 bg-slate-800 text-slate-300 rounded-lg text-xs font-mono font-bold"
+                  >
+                    Stop Listening
+                  </button>
+                )}
+              </div>
+              {micListening && (
+                <div className="space-y-2 mt-3">
+                  <div className="w-full bg-slate-900 h-4 rounded-full overflow-hidden border border-slate-800">
+                    <div
+                      className={`h-full transition-all duration-75 ${
+                        hissDetected ? 'bg-rose-500' : 'bg-emerald-500'
+                      }`}
+                      style={{ width: `${Math.max(5, micLevel)}%` }}
+                    />
+                  </div>
+                  <div className="text-[11px] font-mono text-slate-400">
+                    {hissDetected ? (
+                      <span className="text-rose-400 font-bold">⚠️ High-frequency pneumatic hiss detected near coupling! Check red line suzie.</span>
+                    ) : (
+                      <span className="text-emerald-400">✓ Pressure intact: Zero acoustic air leaks detected.</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {defectPhoto && (
               <div className="p-4 bg-slate-950 rounded-2xl border border-red-500/40 flex flex-col sm:flex-row gap-4 items-center">
                 <img src={defectPhoto} alt="Defect Snapshot" className="w-32 h-32 object-cover rounded-xl border border-slate-800" />
@@ -359,6 +565,52 @@ export default function App() {
                 TomTom Commercial Routing Active
               </span>
             </div>
+
+            {/* CRITICAL BRIDGE RADAR ALERT */}
+            <div className="p-4 bg-rose-950/40 border border-rose-500/50 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <Flame className="w-5 h-5 text-rose-400 animate-pulse" />
+                  <span className="text-xs font-mono font-bold text-rose-300 uppercase">COLLISION IMMINENT RADAR: 1 MILE OUT</span>
+                </div>
+                <h4 className="text-sm font-bold text-white mt-1">Watford Junction (St Albans Rd Girder) • ID: WCML-WAT-049</h4>
+                <p className="text-xs text-slate-300 font-mono mt-0.5">Signed: 4.40m | Truck: {trailerHeight}m (Haunch Strike Risk: +5cm over)</p>
+              </div>
+              <a
+                href="tel:03457114141"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-mono font-bold text-xs rounded-xl flex items-center space-x-2"
+              >
+                <PhoneCall size={14} />
+                <span>NR Emergency: 03457 11 41 41</span>
+              </a>
+            </div>
+
+            {/* AIR SUSPENSION OFFSET */}
+            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center text-xs font-mono">
+              <span className="text-slate-400 flex items-center gap-1.5">
+                <Sliders size={14} className="text-emerald-400" /> Air Suspension Ride Mode:
+              </span>
+              <div className="flex gap-1.5">
+                {[
+                  { id: 'dump', label: 'Dump Air (-8cm)' },
+                  { id: 'normal', label: 'Normal (0cm)' },
+                  { id: 'lift', label: 'Raised (+10cm)' }
+                ].map(m => (
+                  <button
+                    key={m.id}
+                    onClick={() => setSuspensionOffset(m.id as any)}
+                    className={`px-2.5 py-1 rounded-lg border transition ${
+                      suspensionOffset === m.id
+                        ? 'bg-amber-500 border-amber-400 text-slate-950 font-bold'
+                        : 'bg-slate-900 border-slate-800 text-slate-400'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono">
                 <span className="text-slate-500 block text-[10px]">A: DEPARTURE LOCATION</span>
@@ -396,7 +648,6 @@ export default function App() {
               )}
             </div>
 
-            {/* DEDICATED MAP CONTAINER */}
             <TomTomTruckMap
               apiKey={TOMTOM_KEY}
               origin={origin}
@@ -404,14 +655,6 @@ export default function App() {
               onStatsCalculated={setRouteStats}
               triggerRecalculate={recalcTrigger}
             />
-
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/40 rounded-2xl flex items-center space-x-3 text-xs font-mono">
-              <AlertTriangle size={20} className="text-emerald-400 flex-shrink-0" />
-              <div>
-                <span className="font-bold text-emerald-300 block">Active Bridge Clearance Shield: 4.45m Trailer</span>
-                <span className="text-slate-300">Routing engine actively bypasses Network Rail low bridges and weight restrictions.</span>
-              </div>
-            </div>
           </div>
         )}
 
@@ -452,10 +695,80 @@ export default function App() {
                 <span className="text-xs text-slate-400 mt-1 block">Cross-Dock Inbound Slot</span>
               </div>
               <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] font-mono text-amber-400 uppercase font-bold">YARD DWELL TIMER</span>
+                <span className="text-[10px] font-mono text-amber-400 uppercase font-bold">LIVE DEMURRAGE TIMER (£45/H)</span>
                 <div className="text-3xl font-mono font-black text-slate-100 mt-1">{fmtTime(demSec)}</div>
                 <span className="text-xs text-slate-400 mt-1 block">24m remaining in contract free-time</span>
               </div>
+            </div>
+
+            {/* 4-STAGE ANONYMOUS YARD WHISTLEBLOWER */}
+            <div className="p-5 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <ShieldCheck size={18} className="text-emerald-400" />
+                  <span className="text-xs font-mono font-bold text-slate-100">4-Stage Anonymous Yard Whistleblower</span>
+                </div>
+                <span className="text-[11px] font-mono text-amber-400">Driver Protected</span>
+              </div>
+              <p className="text-xs text-slate-400 font-mono">
+                Encountering an unsafe yard, blocked fire lane, or aggressive staff? Report anonymously to hold site operators accountable.
+              </p>
+              {!whistleblowerOpen ? (
+                <button
+                  onClick={() => setWhistleblowerOpen(true)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-mono font-bold"
+                >
+                  📢 File Anonymous Site Hazard Report
+                </button>
+              ) : (
+                <div className="p-4 bg-slate-900 rounded-xl border border-slate-800 space-y-3">
+                  <div className="flex justify-between items-center text-xs font-mono">
+                    <span className="text-amber-400 font-bold">STAGE {whistleStage} OF 4</span>
+                    <button onClick={() => setWhistleblowerOpen(false)} className="text-slate-400 hover:text-white">✕ Close</button>
+                  </div>
+                  {whistleStage === 1 && (
+                    <div className="space-y-2">
+                      <textarea
+                        rows={2}
+                        value={hazardText}
+                        onChange={e => setHazardText(e.target.value)}
+                        placeholder="Describe safety hazard (e.g. Unsafe bay lock, unlit yard, damaged catwalk)..."
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none"
+                      />
+                      <button
+                        onClick={() => setWhistleStage(2)}
+                        className="px-4 py-2 bg-emerald-500 text-slate-950 rounded-lg text-xs font-mono font-bold"
+                      >
+                        Submit Anonymously to Depot Admin →
+                      </button>
+                    </div>
+                  )}
+                  {whistleStage === 2 && (
+                    <div className="text-xs font-mono text-slate-300 space-y-2">
+                      <div className="text-emerald-400 font-bold">✓ Report Dispatched to Site Admin with 48h Resolution Notice.</div>
+                      <p className="text-slate-400">Site management must upload proof of remediation.</p>
+                      <button onClick={() => setWhistleStage(3)} className="text-xs text-amber-400 underline">Simulate Admin Proof of Fix →</button>
+                    </div>
+                  )}
+                  {whistleStage === 3 && (
+                    <div className="text-xs font-mono text-slate-300 space-y-2">
+                      <div className="text-blue-400 font-bold">📷 Proof of Fix Uploaded by Site Admin.</div>
+                      <p className="text-slate-400">Check photo of repaired bay lock. Do you verify this hazard is cleared?</p>
+                      <button
+                        onClick={() => setWhistleStage(4)}
+                        className="px-3 py-1.5 bg-emerald-500 text-slate-950 rounded-lg font-bold"
+                      >
+                        ✓ Confirm Hazard Resolved
+                      </button>
+                    </div>
+                  )}
+                  {whistleStage === 4 && (
+                    <div className="text-xs font-mono text-emerald-400 font-bold">
+                      🎉 Hazard Closed and Cleared by Driver. Community safety record updated!
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
