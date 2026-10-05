@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Truck, ShieldAlert, RotateCcw, Award, CheckCircle2, ChevronRight
+  Truck, ShieldAlert, RotateCcw, Award, CheckCircle2, ChevronRight,
+  Navigation, Clock, Building2, PhoneCall, Volume2, Mic, AlertTriangle,
+  Briefcase, DollarSign, MapPin, CheckSquare, Square, Camera, Plus, Minus
 } from 'lucide-react';
 
 interface DriverProfile {
@@ -20,9 +22,10 @@ interface DriverProfile {
 export default function DrivePartnersApp() {
   const [profile, setProfile] = useState<DriverProfile | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [activeTab, setActiveTab] = useState<'passport' | 'check_truck' | 'navigation' | 'bridge_shield' | 'depot_demurrage' | 'epod' | 'marketplace' | 'welfare'>('passport');
 
   // Onboarding wizard form state
-  const [step, setStep] = useState(1);
+  const [onboardingStep, setOnboardingStep] = useState(1);
   const [formData, setFormData] = useState({
     fullName: '',
     mobile: '',
@@ -34,10 +37,30 @@ export default function DrivePartnersApp() {
     d906Signature: ''
   });
 
-  // Canvas drawing ref for D906 signature
+  // Canvas drawing ref for signatures
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
+
+  // In-Cab Vehicle & Roadworthiness State
+  const [runningHeight, setRunningHeight] = useState<number>(4.45);
+  const [airSuspension, setAirSuspension] = useState<'Normal (0cm)' | 'Dump Air (-8cm)' | 'Raised (+10cm)'>('Normal (0cm)');
+  const [isVoicePlaying, setIsVoicePlaying] = useState(false);
+  const [airLeakTesting, setAirLeakTesting] = useState(false);
+  const [airLeakResult, setAirLeakResult] = useState<'SEALED' | 'HISS_DEFECT' | null>(null);
+  const [checkedItems, setCheckedItems] = useState<{ [key: string]: boolean }>({});
+  const [walkaroundSigned, setWalkaroundSigned] = useState(false);
+
+  // Demurrage & Depot State
+  const [dwellMinutes, setDwellMinutes] = useState(95); // 35m past 60m free time
+  const [whistleblowerStage, setWhistleblowerStage] = useState<1 | 2 | 3 | 4>(2);
+
+  // ePOD Signature
+  const epodCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [epodSigned, setEpodSigned] = useState(false);
+
+  // HMRC Subsistence nights counter
+  const [nightsAway, setNightsAway] = useState(16);
 
   // Load profile from localStorage on mount
   useEffect(() => {
@@ -52,29 +75,29 @@ export default function DrivePartnersApp() {
     setIsLoaded(true);
   }, []);
 
-  // Signature canvas handlers
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  // Signature drawing logic
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>, targetCanvas: HTMLCanvasElement | null) => {
     setIsDrawing(true);
-    draw(e);
+    draw(e, targetCanvas);
   };
 
-  const stopDrawing = () => {
+  const stopDrawing = (isEpod = false) => {
     setIsDrawing(false);
-    if (canvasRef.current) {
-      const dataUrl = canvasRef.current.toDataURL();
-      setFormData(prev => ({ ...prev, d906Signature: dataUrl }));
+    if (!isEpod && canvasRef.current) {
+      setFormData(prev => ({ ...prev, d906Signature: canvasRef.current!.toDataURL() }));
       setHasSigned(true);
+    } else if (isEpod && epodCanvasRef.current) {
+      setEpodSigned(true);
     }
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>, targetCanvas: HTMLCanvasElement | null) => {
     if (!isDrawing && e.type !== 'mousedown' && e.type !== 'touchstart') return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    if (!targetCanvas) return;
+    const ctx = targetCanvas.getContext('2d');
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
+    const rect = targetCanvas.getBoundingClientRect();
     const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
     const x = clientX - rect.left;
@@ -82,7 +105,7 @@ export default function DrivePartnersApp() {
 
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = '#10b981'; // Emerald
+    ctx.strokeStyle = '#10b981';
 
     if (e.type === 'mousedown' || e.type === 'touchstart') {
       ctx.beginPath();
@@ -90,16 +113,6 @@ export default function DrivePartnersApp() {
     } else {
       ctx.lineTo(x, y);
       ctx.stroke();
-    }
-  };
-
-  const clearCanvas = () => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-      setHasSigned(false);
-      setFormData(prev => ({ ...prev, d906Signature: '' }));
     }
   };
 
@@ -134,9 +147,35 @@ export default function DrivePartnersApp() {
         cpcHours: '35 / 35 Periodic Hours',
         d906Signature: ''
       });
-      setStep(1);
+      setOnboardingStep(1);
       setHasSigned(false);
+      setActiveTab('passport');
     }
+  };
+
+  // 0.80x Audio Inspection Prompt
+  const speakInspectionPrompt = (text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.80; // Slower, calm in-cab voice
+      utterance.pitch = 1.0;
+      utterance.onstart = () => setIsVoicePlaying(true);
+      utterance.onend = () => setIsVoicePlaying(false);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Acoustic Air Leak DSP Simulation
+  const runAcousticAirTest = () => {
+    setAirLeakTesting(true);
+    setAirLeakResult(null);
+    speakInspectionPrompt('Listening for pneumatic hissing between 4000 and 8000 Hertz.');
+    setTimeout(() => {
+      setAirLeakTesting(false);
+      setAirLeakResult('SEALED');
+      speakInspectionPrompt('Air test complete. Pneumatic brake lines and red suzie are fully sealed. Pass.');
+    }, 3500);
   };
 
   if (!isLoaded) {
@@ -153,7 +192,6 @@ export default function DrivePartnersApp() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-4 sm:p-6 font-sans max-w-xl mx-auto">
-        {/* Top Header */}
         <div className="border-b border-slate-800 pb-4 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -167,23 +205,20 @@ export default function DrivePartnersApp() {
             </span>
           </div>
 
-          {/* Stepper */}
           <div className="flex items-center gap-2 mt-4">
-            <div className={`flex-1 h-1.5 rounded-full ${step >= 1 ? 'bg-emerald-500' : 'bg-slate-800'}`} />
-            <div className={`flex-1 h-1.5 rounded-full ${step >= 2 ? 'bg-emerald-500' : 'bg-slate-800'}`} />
-            <div className={`flex-1 h-1.5 rounded-full ${step >= 3 ? 'bg-emerald-500' : 'bg-slate-800'}`} />
+            <div className={`flex-1 h-1.5 rounded-full ${onboardingStep >= 1 ? 'bg-emerald-500' : 'bg-slate-800'}`} />
+            <div className={`flex-1 h-1.5 rounded-full ${onboardingStep >= 2 ? 'bg-emerald-500' : 'bg-slate-800'}`} />
+            <div className={`flex-1 h-1.5 rounded-full ${onboardingStep >= 3 ? 'bg-emerald-500' : 'bg-slate-800'}`} />
           </div>
           <div className="flex justify-between text-[11px] text-slate-400 font-mono mt-1.5">
-            <span className={step === 1 ? 'text-emerald-400 font-bold' : ''}>1. Identity</span>
-            <span className={step === 2 ? 'text-emerald-400 font-bold' : ''}>2. Licence & Tacho</span>
-            <span className={step === 3 ? 'text-emerald-400 font-bold' : ''}>3. D906 Consent</span>
+            <span className={onboardingStep === 1 ? 'text-emerald-400 font-bold' : ''}>1. Identity</span>
+            <span className={onboardingStep === 2 ? 'text-emerald-400 font-bold' : ''}>2. Licence & Tacho</span>
+            <span className={onboardingStep === 3 ? 'text-emerald-400 font-bold' : ''}>3. D906 Consent</span>
           </div>
         </div>
 
-        {/* Form Body */}
         <div className="flex-1">
-          {/* STEP 1: IDENTITY */}
-          {step === 1 && (
+          {onboardingStep === 1 && (
             <div className="space-y-4">
               <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
                 <h2 className="text-lg font-bold text-white mb-1">Create Your Driver Account</h2>
@@ -232,7 +267,7 @@ export default function DrivePartnersApp() {
                     alert('Please enter your full legal name.');
                     return;
                   }
-                  setStep(2);
+                  setOnboardingStep(2);
                 }}
                 className="w-full mt-6 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all"
               >
@@ -242,8 +277,7 @@ export default function DrivePartnersApp() {
             </div>
           )}
 
-          {/* STEP 2: LICENCE & TACHO */}
-          {step === 2 && (
+          {onboardingStep === 2 && (
             <div className="space-y-4">
               <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
                 <h2 className="text-lg font-bold text-white mb-1">Commercial Entitlement</h2>
@@ -309,7 +343,7 @@ export default function DrivePartnersApp() {
               <div className="flex gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
+                  onClick={() => setOnboardingStep(1)}
                   className="flex-1 py-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-bold text-sm"
                 >
                   Back
@@ -321,7 +355,7 @@ export default function DrivePartnersApp() {
                       alert('Please enter your licence number.');
                       return;
                     }
-                    setStep(3);
+                    setOnboardingStep(3);
                   }}
                   className="flex-[2] py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20"
                 >
@@ -332,51 +366,34 @@ export default function DrivePartnersApp() {
             </div>
           )}
 
-          {/* STEP 3: D906 MANDATE */}
-          {step === 3 && (
+          {onboardingStep === 3 && (
             <div className="space-y-4">
               <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
                 <h2 className="text-lg font-bold text-white mb-1">D906 Electronic Consent</h2>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Under DVLA Access to Driver Data (ADD) requirements, please sign below to authorise Drive Partners to periodically verify your driving entitlement and tachograph validity.
+                  Under DVLA Access to Driver Data (ADD) rules, please sign below to authorise Drive Partners to periodically check your entitlement and tacho validity.
                 </p>
               </div>
 
-              <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-3 text-[11px] font-mono text-slate-400">
-                Declaration: I, <span className="text-white font-bold">{formData.fullName || 'Driver'}</span> ({formData.licenceNumber}), authorise Drive Partners to check my driving record with the DVLA.
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="text-xs font-mono uppercase text-slate-400">Sign with Finger / Mouse</label>
-                  <button
-                    type="button"
-                    onClick={clearCanvas}
-                    className="text-[11px] text-amber-400 hover:text-amber-300 font-mono"
-                  >
-                    Clear Signature
-                  </button>
-                </div>
-                <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-900 touch-none">
-                  <canvas
-                    ref={canvasRef}
-                    width={480}
-                    height={160}
-                    onMouseDown={startDrawing}
-                    onMouseUp={stopDrawing}
-                    onMouseMove={draw}
-                    onTouchStart={startDrawing}
-                    onTouchEnd={stopDrawing}
-                    onTouchMove={draw}
-                    className="w-full h-40 cursor-crosshair bg-slate-950"
-                  />
-                </div>
+              <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-900 touch-none">
+                <canvas
+                  ref={canvasRef}
+                  width={480}
+                  height={160}
+                  onMouseDown={e => startDrawing(e, canvasRef.current)}
+                  onMouseUp={() => stopDrawing(false)}
+                  onMouseMove={e => draw(e, canvasRef.current)}
+                  onTouchStart={e => startDrawing(e, canvasRef.current)}
+                  onTouchEnd={() => stopDrawing(false)}
+                  onTouchMove={e => draw(e, canvasRef.current)}
+                  className="w-full h-40 cursor-crosshair bg-slate-950"
+                />
               </div>
 
               <div className="flex gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => setOnboardingStep(2)}
                   className="flex-1 py-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-bold text-sm"
                 >
                   Back
@@ -393,106 +410,562 @@ export default function DrivePartnersApp() {
             </div>
           )}
         </div>
-
-        {/* Footer info */}
-        <div className="mt-8 text-center text-[11px] text-slate-600 font-mono">
-          Drive Partners Ltd • DVLA ADD Compliance Gateway
-        </div>
       </div>
     );
   }
 
   // ==========================================
-  // VIEW 2: ACTIVE LIVE DASHBOARD (WITH REAL USER DATA)
+  // VIEW 2: ACTIVE UNIFIED DRIVER COMMAND CENTRE
   // ==========================================
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 font-sans max-w-4xl mx-auto space-y-6">
-      {/* Active Driver Top Bar */}
-      <div className="bg-slate-900/80 border border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-3 sm:p-5 font-sans max-w-5xl mx-auto space-y-4">
+      {/* 1. TOP IN-CAB HUD (PERSISTENT STATUS) */}
+      <div className="bg-slate-900/90 border border-slate-800 p-3.5 sm:p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center font-black text-emerald-400 text-lg">
+          <div className="h-11 w-11 rounded-xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center font-black text-emerald-400 text-base">
             {profile.fullName.split(' ').map(n => n[0]).join('').slice(0, 2) || 'DP'}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-black text-white">{profile.fullName}</h1>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono font-bold">
-                ACTIVE
+              <h1 className="text-sm sm:text-base font-black text-white">{profile.fullName}</h1>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono font-bold">
+                C+E VERIFIED
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-mono">
-              {profile.category} • Licence: <span className="text-emerald-400">{profile.licenceNumber}</span>
-            </p>
+            <div className="flex items-center gap-3 text-xs font-mono text-slate-400 mt-0.5">
+              <span>Unit: <strong className="text-white">DG21EDP</strong></span>
+              <span>Trailer: <strong className="text-white">TR-8492</strong></span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-400 font-bold">
+                {runningHeight.toFixed(2)}m
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Action Button: Reset / Test New Driver */}
         <button
           onClick={handleResetProfile}
-          className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-red-950/40 border border-slate-700 hover:border-red-500/50 text-slate-300 hover:text-red-400 text-xs font-mono font-bold flex items-center gap-2 transition-all"
+          className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-red-950/40 border border-slate-700 hover:border-red-500/50 text-slate-300 hover:text-red-400 text-xs font-mono font-bold flex items-center gap-1.5 transition-all"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          Reset & Test New Driver
+          Reset Driver
         </button>
       </div>
 
-      {/* Verified Digital Credentials Card */}
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
-        <h2 className="text-xs font-mono uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
-          <Award className="w-4 h-4 text-emerald-400" />
-          Verified Roadside Credentials
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
-            <span className="text-[10px] font-mono uppercase text-slate-500 block">Digi-Tacho Card</span>
-            <span className="text-sm font-bold font-mono text-white">{profile.tachoCard || 'Active Card'}</span>
-          </div>
-          <div className="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
-            <span className="text-[10px] font-mono uppercase text-slate-500 block">CPC Status</span>
-            <span className="text-sm font-bold font-mono text-emerald-400">{profile.cpcHours}</span>
-          </div>
-          <div className="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
-            <span className="text-[10px] font-mono uppercase text-slate-500 block">D906 Mandate</span>
-            <span className="text-sm font-bold font-mono text-emerald-400">Signed on Glass ✓</span>
-          </div>
-        </div>
+      {/* 2. SHIFT PROGRESSION STEPPER (HORIZONTAL BIG-THUMB BAR) */}
+      <div className="bg-slate-900/60 border border-slate-800 p-1.5 rounded-2xl flex items-center gap-1 overflow-x-auto scrollbar-none text-xs font-mono">
+        {[
+          { id: 'passport', label: '1. Passport' },
+          { id: 'check_truck', label: '2. Check Truck' },
+          { id: 'navigation', label: '3. 44t Nav' },
+          { id: 'bridge_shield', label: '4. Bridge Shield' },
+          { id: 'depot_demurrage', label: '5. Depot & Dwell' },
+          { id: 'epod', label: '6. Delivery ePOD' },
+          { id: 'marketplace', label: '7. Jobs & Loads' },
+          { id: 'welfare', label: '8. Rest & Tax' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`px-3.5 py-2.5 rounded-xl whitespace-nowrap font-bold transition-all ${
+              activeTab === tab.id
+                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Live Modules Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Module A: Check My Truck */}
-        <div className="bg-slate-900/60 border border-slate-800 hover:border-emerald-500/50 p-5 rounded-2xl transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 text-white font-bold text-sm">
-              <Truck className="w-4 h-4 text-emerald-400" />
-              Check My Truck
-            </div>
-            <span className="text-[11px] font-mono text-slate-500">Ready for Walkaround</span>
-          </div>
-          <p className="text-xs text-slate-400 mb-4">
-            Lock in-cab running height, run 0.80x voice inspection, and perform acoustic air leak test.
-          </p>
-          <button className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-mono font-bold flex items-center justify-center gap-2">
-            Start Vehicle Inspection →
-          </button>
-        </div>
+      {/* 3. ACTIVE TAB CONTENT BODY */}
+      <div className="space-y-4">
 
-        {/* Module B: Bridge Strike Collision Shield */}
-        <div className="bg-slate-900/60 border border-slate-800 hover:border-amber-500/50 p-5 rounded-2xl transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 text-white font-bold text-sm">
-              <ShieldAlert className="w-4 h-4 text-amber-400" />
-              Bridge Strike Shield
+        {/* TAB 1: DRIVER PASSPORT */}
+        {activeTab === 'passport' && (
+          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <h2 className="text-sm font-mono uppercase tracking-wider text-slate-400 flex items-center gap-2">
+              <Award className="w-4 h-4 text-emerald-400" />
+              Roadside DVSA Digital Passport
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl">
+                <span className="text-[10px] font-mono uppercase text-slate-500 block">DVLA Licence</span>
+                <span className="text-base font-bold font-mono text-emerald-400">{profile.licenceNumber}</span>
+                <span className="text-[11px] text-slate-400 block mt-1">{profile.category} • 0 Points</span>
+              </div>
+              <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl">
+                <span className="text-[10px] font-mono uppercase text-slate-500 block">Smart Digi-Tacho</span>
+                <span className="text-base font-bold font-mono text-white">{profile.tachoCard || 'Active Card'}</span>
+                <span className="text-[11px] text-emerald-400 block mt-1">Gen 2 Valid</span>
+              </div>
+              <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl">
+                <span className="text-[10px] font-mono uppercase text-slate-500 block">CPC Periodic Hours</span>
+                <span className="text-base font-bold font-mono text-emerald-400">{profile.cpcHours}</span>
+                <span className="text-[11px] text-slate-400 block mt-1">DQC Valid</span>
+              </div>
             </div>
-            <span className="text-[11px] font-mono text-emerald-400">Proximity Radar Ready</span>
+
+            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-emerald-400 block">D906 Electronic Mandate Active</span>
+                <span className="text-[11px] text-slate-400">Authorised for DVLA ADD Entitlement & Tachograph checks.</span>
+              </div>
+              <button 
+                onClick={() => setActiveTab('check_truck')}
+                className="px-4 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs"
+              >
+                Proceed to Check Truck →
+              </button>
+            </div>
           </div>
-          <p className="text-xs text-slate-400 mb-4">
-            1-mile collision radar, Network Rail emergency hotline (03457 11 41 41), and air dump offset.
-          </p>
-          <button className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-mono font-bold flex items-center justify-center gap-2">
-            View Collision Radar →
-          </button>
-        </div>
+        )}
+
+        {/* TAB 2: CHECK MY TRUCK */}
+        {activeTab === 'check_truck' && (
+          <div className="space-y-4">
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
+              <span className="text-xs font-mono uppercase text-slate-400 block mb-2">Step 1: Lock In-Cab Height Placard</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { m: 4.00, imp: "13' 1\"" },
+                  { m: 4.20, imp: "13' 9\"" },
+                  { m: 4.45, imp: "14' 7\"" },
+                  { m: 4.88, imp: "16' 0\"" }
+                ].map(h => (
+                  <button
+                    key={h.m}
+                    onClick={() => {
+                      setRunningHeight(h.m);
+                      speakInspectionPrompt(`Running height confirmed at ${h.m} meters.`);
+                    }}
+                    className={`p-4 rounded-xl border text-center transition-all ${
+                      runningHeight === h.m
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-400 font-black scale-[1.02]'
+                        : 'bg-slate-950 border-slate-800 text-slate-400'
+                    }`}
+                  >
+                    <span className="text-lg font-black block">{h.m.toFixed(2)}m</span>
+                    <span className="text-xs font-mono">{h.imp}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Volume2 className="w-4 h-4 text-emerald-400" />
+                  Acoustic Air Leak Microphone Radar
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Listens for pneumatic hissing (4kHz–8kHz) near red emergency suzies & brake chambers.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {airLeakResult && (
+                  <span className="text-xs px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-mono font-bold">
+                    SEALED (PASS) ✓
+                  </span>
+                )}
+                <button
+                  onClick={runAcousticAirTest}
+                  disabled={airLeakTesting}
+                  className="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-2"
+                >
+                  <Mic className="w-4 h-4" />
+                  {airLeakTesting ? 'Listening...' : 'Test Air Lines'}
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono uppercase text-slate-400">Step 2: DVSA PG9 32-Point Inspection (0.80x Voice Guide)</span>
+                <button
+                  onClick={() => speakInspectionPrompt('Check fifth wheel locking bar and ensure dog clip is fully engaged down over the handle.')}
+                  className="text-xs text-emerald-400 hover:underline flex items-center gap-1 font-mono"
+                >
+                  <Volume2 className="w-3.5 h-3.5" /> Read Next Item
+                </button>
+              </div>
+
+              {[
+                { id: 'c1', title: 'Fifth Wheel Locking Bar & Dog-Clip Latch Engaged' },
+                { id: 'c2', title: 'Red Emergency & Yellow Service Suzies Connected' },
+                { id: 'c3', title: 'All Tyre Treads > 1mm & Wheel Nut Indicators Aligned' },
+                { id: 'c4', title: 'Trailer Curtain Straps & Load Security Tested' }
+              ].map(item => (
+                <div
+                  key={item.id}
+                  onClick={() => setCheckedItems(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                  className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                    checkedItems[item.id]
+                      ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                      : 'bg-slate-950 border-slate-800 text-slate-400'
+                  }`}
+                >
+                  <span className="text-xs font-bold">{item.title}</span>
+                  {checkedItems[item.id] ? <CheckSquare className="w-5 h-5 text-emerald-400" /> : <Square className="w-5 h-5" />}
+                </div>
+              ))}
+
+              <button
+                onClick={() => {
+                  setWalkaroundSigned(true);
+                  speakInspectionPrompt('Walkaround check complete and signed. 15-month DVSA audit record sealed.');
+                }}
+                className="w-full mt-4 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm"
+              >
+                {walkaroundSigned ? 'Inspection Completed & Sealed (15-Mo DVSA Audit ✓)' : 'Sign & Complete Walkaround Check'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: 44t COMMERCIAL NAVIGATION */}
+        {activeTab === 'navigation' && (
+          <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Navigation className="w-4 h-4 text-emerald-400" />
+                  TomTom 44-Tonne Commercial Truck Routing
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Clearance Corridor: Min 4.65m clearance (Locked at {runningHeight.toFixed(2)}m + 20cm safety margin).
+                </p>
+              </div>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-mono">
+                LOW BRIDGES BYPASSED
+              </span>
+            </div>
+
+            <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2 text-xs font-mono">
+              <div className="flex justify-between text-slate-400">
+                <span>Origin:</span>
+                <span className="text-white font-bold">Daventry DIRFT (NN6 7GZ)</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Destination:</span>
+                <span className="text-white font-bold">Park Royal Cross-Dock (NW10 7HQ)</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Remaining Distance:</span>
+                <span className="text-emerald-400 font-bold">68.4 Miles (1h 22m)</span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setActiveTab('bridge_shield')}
+              className="w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2"
+            >
+              Open In-Cab Bridge Strike Shield →
+            </button>
+          </div>
+        )}
+
+        {/* TAB 4: BRIDGE STRIKE COLLISION SHIELD */}
+        {activeTab === 'bridge_shield' && (
+          <div className="space-y-4">
+            <div className="bg-red-950/40 border-2 border-red-500/80 p-5 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-bold text-red-400 flex items-center gap-1.5 animate-pulse">
+                  <AlertTriangle className="w-4 h-4" />
+                  CRITICAL 1-MILE COLLISION PROXIMITY RADAR
+                </span>
+                <span className="text-xs font-mono px-2 py-0.5 rounded bg-red-500 text-slate-950 font-black">
+                  ASSET: WCML-WAT-049
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-black text-white">Watford Junction (St Albans Rd Girder Bridge)</h3>
+                <p className="text-xs text-red-300 mt-1">
+                  Signed Clearance: <strong>4.40m</strong> • Your Truck Height: <strong className="text-white underline">{runningHeight.toFixed(2)}m</strong>
+                </p>
+                <p className="text-xs font-bold text-amber-400 mt-1">
+                  WARNING: +5cm Collision Strike Risk! Center Crown: 4.50m / Haunch: 3.90m.
+                </p>
+              </div>
+
+              <a
+                href="tel:03457114141"
+                className="w-full py-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-red-600/40 active:scale-[0.98] transition-all"
+              >
+                <PhoneCall className="w-5 h-5" />
+                Call Network Rail Emergency Hotline: 03457 11 41 41
+              </a>
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
+              <span className="text-xs font-mono uppercase text-slate-400 block mb-2">Air Suspension Ride Height Offset</span>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { mode: 'Dump Air (-8cm)', note: 'Low clearance' },
+                  { mode: 'Normal (0cm)', note: 'Cruising' },
+                  { mode: 'Raised (+10cm)', note: 'Ferry / ramp' }
+                ].map(item => (
+                  <button
+                    key={item.mode}
+                    onClick={() => {
+                      setAirSuspension(item.mode as any);
+                      speakInspectionPrompt(`Air suspension set to ${item.mode}.`);
+                    }}
+                    className={`p-3.5 rounded-xl border text-center transition-all ${
+                      airSuspension === item.mode
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold'
+                        : 'bg-slate-950 border-slate-800 text-slate-400'
+                    }`}
+                  >
+                    <span className="text-xs font-bold block">{item.mode}</span>
+                    <span className="text-[10px] font-mono text-slate-500">{item.note}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: DEPOT & DEMURRAGE */}
+        {activeTab === 'depot_demurrage' && (
+          <div className="space-y-4">
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl grid grid-cols-2 gap-3">
+              <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl text-center">
+                <span className="text-[10px] font-mono uppercase text-slate-500 block">Freight Barrier PIN</span>
+                <span className="text-2xl font-black font-mono text-emerald-400">8492</span>
+                <span className="text-[11px] text-slate-400 block mt-1">Car barriers avoided ✓</span>
+              </div>
+              <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl text-center">
+                <span className="text-[10px] font-mono uppercase text-slate-500 block">Assigned Dock</span>
+                <span className="text-2xl font-black font-mono text-amber-400">BAY #24</span>
+                <span className="text-[11px] text-slate-400 block mt-1">Inbound Cross-Dock</span>
+              </div>
+            </div>
+
+            {/* Live Demurrage Clock */}
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-red-400" />
+                    Live Demurrage Detention Clock (£45.00/hr)
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Free Time: 60 mins • Total Dwell: {dwellMinutes} mins (<strong className="text-red-400">35 mins billable</strong>)
+                  </p>
+                </div>
+                <span className="text-xl font-black font-mono text-red-400">
+                  £26.25 ACCRUING
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => alert('Demurrage Claim PDF compiled with GPS arrival timestamp: 20:15 Today.')}
+                  className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs font-mono"
+                >
+                  Generate Detention Claim PDF (£26.25)
+                </button>
+              </div>
+            </div>
+
+            {/* 4-Stage Anonymous Yard Whistleblower */}
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono uppercase text-slate-400">4-Stage Anonymous Yard Whistleblower</span>
+                <span className="text-xs font-mono text-amber-400">Stage {whistleblowerStage} of 4: Site Admin Notified (42h SLA left)</span>
+              </div>
+
+              <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                <span className="text-xs font-bold text-white block">Active Report: Unsafe Bay #24 Wheel Lock & Unlit Catwalk</span>
+                <span className="text-[11px] text-slate-400 block">
+                  Site Manager was sent notification. Once they upload photo proof of the fix, you can verify and clear the hazard.
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setWhistleblowerStage(3);
+                    alert('Site Admin uploaded photo proof of repaired wheel lock!');
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-mono font-bold"
+                >
+                  Simulate Admin Proof
+                </button>
+                <button
+                  onClick={() => {
+                    setWhistleblowerStage(4);
+                    alert('Driver confirmed fix. Hazard cleared!');
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold"
+                >
+                  Confirm & Clear Hazard
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: DELIVERY e-POD */}
+        {activeTab === 'epod' && (
+          <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4">
+            <div>
+              <h3 className="text-sm font-bold text-white">Electronic Proof of Delivery (e-POD)</h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Consignment: <strong>CMR-88291</strong> • Park Royal Inbound Cross-Dock.
+              </p>
+            </div>
+
+            <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-900 touch-none">
+              <span className="block p-2 text-[10px] font-mono uppercase text-slate-500">Receiver Sign-on-Glass (Warehouse Supervisor)</span>
+              <canvas
+                ref={epodCanvasRef}
+                width={480}
+                height={150}
+                onMouseDown={e => startDrawing(e, epodCanvasRef.current)}
+                onMouseUp={() => stopDrawing(true)}
+                onMouseMove={e => draw(e, epodCanvasRef.current)}
+                onTouchStart={e => startDrawing(e, epodCanvasRef.current)}
+                onTouchEnd={() => stopDrawing(true)}
+                onTouchMove={e => draw(e, epodCanvasRef.current)}
+                className="w-full h-36 cursor-crosshair bg-slate-950"
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                if (!epodSigned) {
+                  alert('Please have the warehouse supervisor sign above.');
+                  return;
+                }
+                alert('Delivery confirmed! e-POD sealed and escrow funds released.');
+              }}
+              className="w-full py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2"
+            >
+              <CheckCircle2 className="w-5 h-5" />
+              Complete Delivery & Release Payment
+            </button>
+          </div>
+        )}
+
+        {/* TAB 7: JOBS & HAULAGE EXCHANGE */}
+        {activeTab === 'marketplace' && (
+          <div className="space-y-4">
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono uppercase text-slate-400">Direct Haulier Offer (Zero Agency Markup)</span>
+                <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">£28.00/HR</span>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-white">Night Trunk: Daventry DIRFT ➔ Park Royal</h4>
+                <p className="text-xs text-slate-400 mt-0.5">Midlands Freight Logistics Ltd • Start 18:30 • 10 Hours Guaranteed (£280.00)</p>
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => alert('Job Offer Accepted! Shift locked into your calendar.')}
+                  className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs"
+                >
+                  Accept Offer
+                </button>
+                <button
+                  onClick={() => alert('Counter-offer sent for £32.00/hr.')}
+                  className="px-4 py-3 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs"
+                >
+                  Counter
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono uppercase text-slate-400">Driver-First Haulage Exchange</span>
+                <span className="text-xs font-mono text-emerald-400 font-bold">£4.53/MILE</span>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-white">Return Load: Northampton ➔ Trafford Park, Manchester</h4>
+                <p className="text-xs text-slate-400 mt-0.5">26 Pallets • 22t Ambient FMCG • Payout: <strong className="text-emerald-400">£580.00</strong> (Escrow Protected)</p>
+              </div>
+
+              <button
+                onClick={() => alert('Load Claimed! 44t route synced directly to TomTom Navigation.')}
+                className="w-full py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 font-mono font-bold text-xs flex items-center justify-center gap-2"
+              >
+                Claim Backload & Sync Navigation →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 8: OVERNIGHT WELFARE & HMRC TAX */}
+        {activeTab === 'welfare' && (
+          <div className="space-y-4">
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono uppercase text-slate-400">Secure HGV Overnight Parking</span>
+                <span className="text-xs font-mono text-emerald-400 font-bold">14 BAYS FREE</span>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-white">Red Lion Truckstop (M1 J16)</h4>
+                <p className="text-xs text-slate-400 mt-0.5">4.8 Miles Away • 5★ Security (CCTV & Fenced) • Hot Diner, Clean Showers, Truck Wash</p>
+              </div>
+
+              <button
+                onClick={() => alert('Navigating to Red Lion Truckstop with SNAP billing.')}
+                className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold text-xs"
+              >
+                Reserve Space with SNAP Account →
+              </button>
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-emerald-400" />
+                    HMRC £34.90 Overnight Subsistence Vault
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Official tax-free meal allowance for nights away from home.</p>
+                </div>
+                <span className="text-xl font-black font-mono text-emerald-400">
+                  £{(nightsAway * 34.90).toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                <span className="text-xs font-mono text-slate-400">Qualifying Nights Away:</span>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setNightsAway(Math.max(0, nightsAway - 1))}
+                    className="p-2 rounded-lg bg-slate-800 text-white hover:bg-slate-700"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="text-base font-black font-mono text-white">{nightsAway}</span>
+                  <button
+                    onClick={() => setNightsAway(nightsAway + 1)}
+                    className="p-2 rounded-lg bg-slate-800 text-white hover:bg-slate-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={() => alert(`Exporting P87 tax schedule: £${(nightsAway * 34.90).toFixed(2)} tax relief claimed.`)}
+                className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono font-bold text-xs"
+              >
+                Export P87 Tax Relief Claim Statement
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
