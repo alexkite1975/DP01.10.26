@@ -1,9 +1,19 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import ContextualHeader from '@/components/navigation/ContextualHeader';
+import SwipeBackWrapper from '@/components/navigation/SwipeBackWrapper';
 
 export const metadata: Metadata = {
   title: 'Drive Partners & SmartHaul OS | In-Cab System',
   description: 'Commercial HGV Navigation, Compliance & Cockpit OS',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -12,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark bg-slate-950 text-slate-100">
       <head>
         <link
           rel="stylesheet"
@@ -21,7 +31,12 @@ export default function RootLayout({
           crossOrigin=""
         />
       </head>
-      <body>{children}</body>
+      <body className="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
+        <ContextualHeader />
+        <SwipeBackWrapper>
+          {children}
+        </SwipeBackWrapper>
+      </body>
     </html>
   );
 }
