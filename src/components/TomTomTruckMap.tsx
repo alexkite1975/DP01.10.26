@@ -133,11 +133,11 @@ export default function TomTomTruckMap({
       }).addTo(mapInstanceRef.current);
 
       L.marker([sPos.lat, sPos.lon])
-        .addTo(markersLayerRef.current!)
+        .addTo(markersLayerRef.current)
         .bindPopup(`<b>Start Point:</b> ${origin}`);
 
       L.marker([ePos.lat, ePos.lon])
-        .addTo(markersLayerRef.current!)
+        .addTo(markersLayerRef.current)
         .bindPopup(`<b>Destination (Bay 24):</b> ${destination}`)
         .openPopup();
 
