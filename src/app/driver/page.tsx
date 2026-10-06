@@ -34,6 +34,36 @@ export default function DriverDashboard() {
     instruction: 'Inspect tread depth across 3/4 breadth (min 1mm), sidewall cuts, bulging, and ensure wheel nut alignment pointers match.'
   };
   const [defectsLogged, setDefectsLogged] = useState(0);
+  // Submit Inspection to Google Cloud Firestore
+  const [submittingCheck, setSubmittingCheck] = useState(false);
+  const [submissionCert, setSubmissionCert] = useState<string | null>(null);
+
+  const submitInspectionToCloud = async () => {
+    setSubmittingCheck(true);
+    try {
+      const res = await fetch('/api/inspections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vehicleReg,
+          trailerId: selectedTrailer === 'CUSTOM' ? customTrailer : selectedTrailer,
+          trailerHeight: fleetTrailers.find(t => t.id === selectedTrailer)?.height || '4.45m',
+          defectsLogged,
+          driverName: 'Driver Alex K.'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSubmissionCert(data.record.digitalSignature);
+        submitInspectionToCloud();
+      }
+    } catch (err) {
+      console.error('Failed to submit inspection:', err);
+    } finally {
+      setSubmittingCheck(false);
+    }
+  };
+
 
   // Statutory Voice Guidance Preference (Default: ON, persisted in Account Settings)
   const [voiceGuidance, setVoiceGuidance] = useState<boolean>(true);
@@ -564,7 +594,7 @@ export default function DriverDashboard() {
                             if (walkaroundStep < dvsaChecklist.length) {
                               setWalkaroundStep(walkaroundStep + 1);
                             } else {
-                              setIsCheckComplete(true);
+                              submitInspectionToCloud();
                             }
                           }}
                           className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-mono rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
