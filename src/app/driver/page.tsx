@@ -8,7 +8,7 @@ import {
   Clock, MapPin, Search, Plus, CheckCircle2, ChevronRight,
   FileText, Camera, Sliders, AlertTriangle, ArrowRight,
   PoundSterling, ShieldCheck, UserCheck, Eye, Mic
-} from 'lucide-react';
+, VolumeX, RotateCcw } from 'lucide-react';
 import { dvsaChecklist, fleetTrailers } from '@/data/dvsaChecklist';
 
 export default function DriverDashboard() {
@@ -23,6 +23,56 @@ export default function DriverDashboard() {
   const [checkStarted, setCheckStarted] = useState(false);
   const [walkaroundStep, setWalkaroundStep] = useState(1);
   const [defectsLogged, setDefectsLogged] = useState(0);
+
+  // Statutory Voice Guidance Preference (Default: ON, persisted in Account Settings)
+  const [voiceGuidance, setVoiceGuidance] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dp_voice_guidance_pref');
+      return saved !== null ? saved === 'true' : true; // DEFAULT: ON
+    }
+    return true;
+  });
+
+  const toggleVoiceGuidance = () => {
+    const nextState = !voiceGuidance;
+    setVoiceGuidance(nextState);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dp_voice_guidance_pref', String(nextState));
+    }
+    if (!nextState && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
+
+  // British English Female Voice Speech Engine
+  const speakBritishClara = (text: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+    const ukFemale = voices.find(v => 
+      (v.lang.startsWith('en-GB') || v.lang === 'en_GB') && 
+      (v.name.includes('Female') || v.name.includes('Sonia') || v.name.includes('Libby') || 
+       v.name.includes('Serena') || v.name.includes('Victoria') || v.name.includes('Martha') ||
+       v.name.includes('Google UK English Female') || v.name.includes('Hazel') || v.name.includes('Susan'))
+    ) || voices.find(v => v.lang.startsWith('en-GB') || v.lang === 'en_GB');
+
+    if (ukFemale) utterance.voice = ukFemale;
+    utterance.lang = 'en-GB';
+    utterance.rate = 0.88;
+    utterance.pitch = 1.05;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Auto-speak statutory check whenever step advances if Voice Guidance is ON
+  useEffect(() => {
+    if (checkStarted && !isCheckComplete && voiceGuidance) {
+      const current = dvsaChecklist[walkaroundStep - 1];
+      if (current) {
+        speakBritishClara(`Step ${current.id}: ${current.title}. ${current.instruction}`);
+      }
+    }
+  }, [walkaroundStep, checkStarted, isCheckComplete, voiceGuidance]);
   const [isCheckComplete, setIsCheckComplete] = useState(false);
   
   // Real Camera & Defect Evidence
