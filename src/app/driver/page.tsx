@@ -13,6 +13,9 @@ import {
 import { dvsaChecklist, fleetTrailers } from '@/data/dvsaChecklist';
 
 export default function DriverDashboard() {
+  const [mounted, setMounted] = useState(false);
+  const vehicleReg = 'GN21 EVX'; // Assigned Tractor Registration
+
   const [activeTab, setActiveTab] = useState<'readiness' | 'route' | 'enroute' | 'depot' | 'tacho' | 'tools'>('readiness');
   const [showSosModal, setShowSosModal] = useState(false);
 
@@ -23,6 +26,12 @@ export default function DriverDashboard() {
   const [customTrailer, setCustomTrailer] = useState('');
   const [checkStarted, setCheckStarted] = useState(false);
   const [walkaroundStep, setWalkaroundStep] = useState(1);
+  const currentItem = dvsaChecklist[walkaroundStep - 1] || dvsaChecklist[0] || {
+    id: 1,
+    category: 'Tractor Steer',
+    title: 'Front Axle Steering Tyres & Wheel Nuts',
+    instruction: 'Inspect tread depth across 3/4 breadth (min 1mm), sidewall cuts, bulging, and ensure wheel nut alignment pointers match.'
+  };
   const [defectsLogged, setDefectsLogged] = useState(0);
 
   // Statutory Voice Guidance Preference (Default: ON, persisted in Account Settings)
@@ -243,6 +252,19 @@ export default function DriverDashboard() {
   const [waypoints, setWaypoints] = useState<string[]>(['Bay #24 Ingress Gate']);
   const [newStop, setNewStop] = useState('');
   const [demurrageMinutes, setDemurrageMinutes] = useState(74);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="font-mono text-sm tracking-wider text-slate-400">INITIALIZING IN-CAB OS TELEMATICS...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -492,7 +514,20 @@ export default function DriverDashboard() {
 
                 {(() => {
                   const currentItem = dvsaChecklist[walkaroundStep - 1] || dvsaChecklist[0];
-                  return (
+                  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="font-mono text-sm tracking-wider text-slate-400">INITIALIZING IN-CAB OS TELEMATICS...</p>
+      </div>
+    );
+  }
+
+  return (
                     <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl space-y-4">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
