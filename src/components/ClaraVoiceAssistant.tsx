@@ -29,6 +29,8 @@ export default function ClaraVoiceAssistant({
   const [transcript, setTranscript] = useState('');
   const [claraReply, setClaraReply] = useState('Hello Alex. I am Clara, your in-cab voice copilot. Tap the microphone or ask me anything hands-free.');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
@@ -151,6 +153,8 @@ export default function ClaraVoiceAssistant({
       setIsListening(false);
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/40 rounded-3xl p-4 shadow-xl shadow-indigo-500/10 transition-all">

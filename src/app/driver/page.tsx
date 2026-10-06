@@ -26,13 +26,7 @@ export default function DriverDashboard() {
   const [defectsLogged, setDefectsLogged] = useState(0);
 
   // Statutory Voice Guidance Preference (Default: ON, persisted in Account Settings)
-  const [voiceGuidance, setVoiceGuidance] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('dp_voice_guidance_pref');
-      return saved !== null ? saved === 'true' : true; // DEFAULT: ON
-    }
-    return true;
-  });
+  const [voiceGuidance, setVoiceGuidance] = useState<boolean>(true);
 
   const toggleVoiceGuidance = () => {
     const nextState = !voiceGuidance;
@@ -47,7 +41,7 @@ export default function DriverDashboard() {
 
   // British English Female Voice Speech Engine
     // Pre-load and cache British Female Voice
-  const [activeVoiceName, setActiveVoiceName] = useState('Loading UK Voice...');
+  const [activeVoiceName, setActiveVoiceName] = useState('British Voice (en-GB)');
 
   const getExactBritishFemaleVoice = (): SpeechSynthesisVoice | null => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
