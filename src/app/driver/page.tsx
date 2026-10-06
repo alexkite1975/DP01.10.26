@@ -1,4 +1,5 @@
 // Driver OS v1.0.8 - TDZ Resolved
+// Driver OS v1.0.8 - TDZ Resolved
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -27,7 +28,7 @@ export default function DriverDashboard() {
     const [walkaroundStep, setWalkaroundStep] = useState(1);
   const [checkStarted, setCheckStarted] = useState(false);
   const [isCheckComplete, setIsCheckComplete] = useState(false);
-  const currentItem = dvsaChecklist[walkaroundStep - 1] || dvsaChecklist[0] || {
+      const currentItem = dvsaChecklist[walkaroundStep - 1] || dvsaChecklist[0] || {
     id: 1,
     category: 'Tractor Steer',
     title: 'Front Axle Steering Tyres & Wheel Nuts',
