@@ -10,19 +10,13 @@ import {
 } from 'lucide-react';
 
 export default function HaulierDashboard() {
-  const [activeTab, setActiveTab] = useState<'map' | 'dispatch' | 'haulage-partners' | 'compliance' | 'demurrage'>('haulage-partners');
-  
-  // Haulage Partners State
+  const [activeTab, setActiveTab] = useState<'haulage-partners' | 'map' | 'dispatch' | 'compliance' | 'demurrage'>('haulage-partners');
   const [hpEcosystem, setHpEcosystem] = useState<'haulage' | 'courier'>('haulage');
   const [hpStep, setHpStep] = useState<number>(1);
   const [isBroadcasting, setIsBroadcasting] = useState<boolean>(true);
 
-  // Dispatch filter
-  const [filterRegion, setFilterRegion] = useState('all');
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2">
@@ -37,7 +31,6 @@ export default function HaulierDashboard() {
           </span>
         </div>
 
-        {/* Navigation Tabs */}
         <nav className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-mono overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveTab('haulage-partners')}
@@ -72,13 +65,9 @@ export default function HaulierDashboard() {
         </nav>
       </header>
 
-      {/* Main Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-
-        {/* TAB 1: HAULAGE PARTNERS (HP) & RETURNLOADS ECOSYSTEM */}
         {activeTab === 'haulage-partners' && (
           <div className="space-y-6">
-            {/* Modal Header Bar */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -98,7 +87,6 @@ export default function HaulierDashboard() {
                   </div>
                 </div>
 
-                {/* Unified Ecosystem Switcher */}
                 <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 p-1.5 rounded-2xl">
                   <button
                     onClick={() => setHpEcosystem('haulage')}
@@ -115,7 +103,6 @@ export default function HaulierDashboard() {
                 </div>
               </div>
 
-              {/* 6-Step Stepper Header */}
               <div className="grid grid-cols-2 md:grid-cols-6 gap-2 pt-2">
                 {[
                   { step: 1, tag: 'POSTER / HAULIER', title: '1. Load Posting / Availability' },
@@ -146,7 +133,6 @@ export default function HaulierDashboard() {
               </div>
             </div>
 
-            {/* Step Body */}
             {hpStep === 1 && (
               <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -165,7 +151,6 @@ export default function HaulierDashboard() {
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Method A: Post Overflow Load */}
                   <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl space-y-4 flex flex-col justify-between">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -198,7 +183,6 @@ export default function HaulierDashboard() {
                     </button>
                   </div>
 
-                  {/* Method B: Live Smart Matching */}
                   <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl space-y-4 flex flex-col justify-between">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -293,7 +277,6 @@ export default function HaulierDashboard() {
               </div>
             )}
 
-            {/* Stepper Navigation Buttons */}
             <div className="flex items-center justify-between">
               <button
                 disabled={hpStep === 1}
@@ -314,7 +297,6 @@ export default function HaulierDashboard() {
               </button>
             </div>
 
-            {/* Benchmark Pricing Table */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
                 <h3 className="text-sm font-black text-white uppercase tracking-wider">
@@ -379,7 +361,6 @@ export default function HaulierDashboard() {
           </div>
         )}
 
-        {/* TAB 2: LIVE TELEMATICS MAP */}
         {activeTab === 'map' && (
           <div className="space-y-4">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
@@ -392,7 +373,6 @@ export default function HaulierDashboard() {
           </div>
         )}
 
-        {/* TAB 3: DIRECT DISPATCH */}
         {activeTab === 'dispatch' && (
           <div className="space-y-4">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
@@ -406,7 +386,6 @@ export default function HaulierDashboard() {
           </div>
         )}
 
-        {/* TAB 4: COMPLIANCE & DEFECT TRIAGE */}
         {activeTab === 'compliance' && (
           <div className="space-y-4">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
@@ -420,7 +399,6 @@ export default function HaulierDashboard() {
           </div>
         )}
 
-        {/* TAB 5: DEMURRAGE INVOICING */}
         {activeTab === 'demurrage' && (
           <div className="space-y-4">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
@@ -433,7 +411,6 @@ export default function HaulierDashboard() {
             </div>
           </div>
         )}
-
       </main>
     </div>
   );
