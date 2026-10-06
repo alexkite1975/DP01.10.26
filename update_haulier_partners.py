@@ -1,24 +1,26 @@
-'use client';
+import os
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+haulier_code = '''\'use client\';
+
+import React, { useState } from \'react\';
+import Link from \'next/link\';
 import {
   Truck, MapPin, Users, FileCheck, ShieldAlert, CheckCircle2,
   AlertTriangle, ArrowRight, ArrowLeft, RefreshCw, PoundSterling,
   Clock, Sliders, ChevronRight, Send, CheckSquare, Search, Navigation,
   Building2, Eye, Box, Radio, FileText, Check
-} from 'lucide-react';
+} from \'lucide-react\';
 
 export default function HaulierDashboard() {
-  const [activeTab, setActiveTab] = useState<'map' | 'dispatch' | 'haulage-partners' | 'compliance' | 'demurrage'>('haulage-partners');
+  const [activeTab, setActiveTab] = useState<\'map\' | \'dispatch\' | \'haulage-partners\' | \'compliance\' | \'demurrage\'>(\'haulage-partners\');
   
   // Haulage Partners State
-  const [hpEcosystem, setHpEcosystem] = useState<'haulage' | 'courier'>('haulage');
+  const [hpEcosystem, setHpEcosystem] = useState<\'haulage\' | \'courier\'>(\'haulage\');
   const [hpStep, setHpStep] = useState<number>(1);
   const [isBroadcasting, setIsBroadcasting] = useState<boolean>(true);
 
   // Dispatch filter
-  const [filterRegion, setFilterRegion] = useState('all');
+  const [filterRegion, setFilterRegion] = useState(\'all\');
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -40,32 +42,32 @@ export default function HaulierDashboard() {
         {/* Navigation Tabs */}
         <nav className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-mono overflow-x-auto max-w-full">
           <button
-            onClick={() => setActiveTab('haulage-partners')}
-            className={`px-3 py-1.5 rounded-lg transition shrink-0 ${activeTab === 'haulage-partners' ? 'bg-blue-600 text-white font-black shadow-lg shadow-blue-600/30' : 'text-blue-400 hover:text-white'}`}
+            onClick={() => setActiveTab(\'haulage-partners\')}
+            className={`px-3 py-1.5 rounded-lg transition shrink-0 ${activeTab === \'haulage-partners\' ? \'bg-blue-600 text-white font-black shadow-lg shadow-blue-600/30\' : \'text-blue-400 hover:text-white\'}`}
           >
             🌐 Haulage Partners (HP)
           </button>
           <button
-            onClick={() => setActiveTab('map')}
-            className={`px-3 py-1.5 rounded-lg transition shrink-0 ${activeTab === 'map' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
+            onClick={() => setActiveTab(\'map\')}
+            className={`px-3 py-1.5 rounded-lg transition shrink-0 ${activeTab === \'map\' ? \'bg-blue-600 text-white font-bold\' : \'text-slate-400 hover:text-white\'}`}
           >
             1. Live Telematics
           </button>
           <button
-            onClick={() => setActiveTab('dispatch')}
-            className={`px-3 py-1.5 rounded-lg transition shrink-0 ${activeTab === 'dispatch' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
+            onClick={() => setActiveTab(\'dispatch\')}
+            className={`px-3 py-1.5 rounded-lg transition shrink-0 ${activeTab === \'dispatch\' ? \'bg-blue-600 text-white font-bold\' : \'text-slate-400 hover:text-white\'}`}
           >
             2. Direct Dispatch
           </button>
           <button
-            onClick={() => setActiveTab('compliance')}
-            className={`px-3 py-1.5 rounded-lg transition shrink-0 ${activeTab === 'compliance' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
+            onClick={() => setActiveTab(\'compliance\')}
+            className={`px-3 py-1.5 rounded-lg transition shrink-0 ${activeTab === \'compliance\' ? \'bg-blue-600 text-white font-bold\' : \'text-slate-400 hover:text-white\'}`}
           >
             3. Vehicle Check Triage
           </button>
           <button
-            onClick={() => setActiveTab('demurrage')}
-            className={`px-3 py-1.5 rounded-lg transition shrink-0 ${activeTab === 'demurrage' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
+            onClick={() => setActiveTab(\'demurrage\')}
+            className={`px-3 py-1.5 rounded-lg transition shrink-0 ${activeTab === \'demurrage\' ? \'bg-blue-600 text-white font-bold\' : \'text-slate-400 hover:text-white\'}`}
           >
             4. Demurrage (£45/hr)
           </button>
@@ -76,7 +78,7 @@ export default function HaulierDashboard() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
 
         {/* TAB 1: HAULAGE PARTNERS (HP) & RETURNLOADS ECOSYSTEM */}
-        {activeTab === 'haulage-partners' && (
+        {activeTab === \'haulage-partners\' && (
           <div className="space-y-6">
             {/* Modal Header Bar */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl">
@@ -101,14 +103,14 @@ export default function HaulierDashboard() {
                 {/* Unified Ecosystem Switcher */}
                 <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 p-1.5 rounded-2xl">
                   <button
-                    onClick={() => setHpEcosystem('haulage')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${hpEcosystem === 'haulage' ? 'bg-cyan-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-white'}`}
+                    onClick={() => setHpEcosystem(\'haulage\')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${hpEcosystem === \'haulage\' ? \'bg-cyan-500 text-slate-950 font-black shadow-md\' : \'text-slate-400 hover:text-white\'}`}
                   >
                     <Truck className="w-4 h-4" /> Haulage Partners (7.5t – 44t)
                   </button>
                   <button
-                    onClick={() => setHpEcosystem('courier')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${hpEcosystem === 'courier' ? 'bg-cyan-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-white'}`}
+                    onClick={() => setHpEcosystem(\'courier\')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${hpEcosystem === \'courier\' ? \'bg-cyan-500 text-slate-950 font-black shadow-md\' : \'text-slate-400 hover:text-white\'}`}
                   >
                     <RefreshCw className="w-4 h-4" /> Courier Partners (Same-Day Van)
                   </button>
@@ -130,15 +132,15 @@ export default function HaulierDashboard() {
                     onClick={() => setHpStep(s.step)}
                     className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
                       hpStep === s.step
-                        ? 'bg-cyan-950/40 border-cyan-400 shadow-md shadow-cyan-500/10'
-                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                        ? \'bg-cyan-950/40 border-cyan-400 shadow-md shadow-cyan-500/10\'
+                        : \'bg-slate-950/60 border-slate-800 hover:border-slate-700\'
                     }`}
                   >
                     <div className="flex items-center justify-between text-[10px] font-mono font-bold text-slate-400 mb-1">
                       <span>STEP {s.step}</span>
                       <span className="text-[9px] text-cyan-400/80">{s.tag}</span>
                     </div>
-                    <span className={`text-xs font-bold leading-tight ${hpStep === s.step ? 'text-cyan-300' : 'text-slate-300'}`}>
+                    <span className={`text-xs font-bold leading-tight ${hpStep === s.step ? \'text-cyan-300\' : \'text-slate-300\'}`}>
                       {s.title}
                     </span>
                   </button>
@@ -191,7 +193,7 @@ export default function HaulierDashboard() {
                       </div>
                     </div>
                     <button
-                      onClick={() => alert('✓ Posted Full Truckload to Haulage Partners Member Exchange!')}
+                      onClick={() => alert(\'✓ Posted Full Truckload to Haulage Partners Member Exchange!\')}
                       className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/20 transition"
                     >
                       Post Load to Exchange
@@ -227,11 +229,11 @@ export default function HaulierDashboard() {
                       onClick={() => setIsBroadcasting(!isBroadcasting)}
                       className={`w-full py-3 rounded-xl font-bold text-xs transition ${
                         isBroadcasting
-                          ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black shadow-lg shadow-cyan-500/20'
-                          : 'bg-slate-800 hover:bg-slate-700 text-white'
+                          ? \'bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black shadow-lg shadow-cyan-500/20\'
+                          : \'bg-slate-800 hover:bg-slate-700 text-white\'
                       }`}
                     >
-                      {isBroadcasting ? 'Disable Broadcast' : 'Enable Live Smart Matching Broadcast'}
+                      {isBroadcasting ? \'Disable Broadcast\' : \'Enable Live Smart Matching Broadcast\'}
                     </button>
                   </div>
                 </div>
@@ -380,7 +382,7 @@ export default function HaulierDashboard() {
         )}
 
         {/* TAB 2: LIVE TELEMATICS MAP */}
-        {activeTab === 'map' && (
+        {activeTab === \'map\' && (
           <div className="space-y-4">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
               <h2 className="text-base font-black text-white">Live 1Hz Fleet GPS Telematics Map</h2>
@@ -393,7 +395,7 @@ export default function HaulierDashboard() {
         )}
 
         {/* TAB 3: DIRECT DISPATCH */}
-        {activeTab === 'dispatch' && (
+        {activeTab === \'dispatch\' && (
           <div className="space-y-4">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
               <h2 className="text-base font-black text-white">Direct Driver Dispatch (£28.00/hr)</h2>
@@ -407,7 +409,7 @@ export default function HaulierDashboard() {
         )}
 
         {/* TAB 4: COMPLIANCE & DEFECT TRIAGE */}
-        {activeTab === 'compliance' && (
+        {activeTab === \'compliance\' && (
           <div className="space-y-4">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
               <h2 className="text-base font-black text-white">Vehicle Check Walkaround Defect Triage</h2>
@@ -421,7 +423,7 @@ export default function HaulierDashboard() {
         )}
 
         {/* TAB 5: DEMURRAGE INVOICING */}
-        {activeTab === 'demurrage' && (
+        {activeTab === \'demurrage\' && (
           <div className="space-y-4">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
               <h2 className="text-base font-black text-white">Live Demurrage Invoicing Manager (£45.00/hr)</h2>
@@ -438,3 +440,9 @@ export default function HaulierDashboard() {
     </div>
   );
 }
+'''
+
+with open('src/app/haulier/page.tsx', 'w') as f:
+    f.write(haulier_code)
+
+print("✓ Updated src/app/haulier/page.tsx with complete Haulage Partners module!")

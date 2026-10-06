@@ -1,0 +1,42 @@
+export interface DvsaItem { id: number; category: string; title: string; instruction: string; }
+
+export const dvsaChecklist: DvsaItem[] = [
+  { id: 1, category: 'Tractor Steer', title: 'Front Axle Steering Tyres & Wheel Nuts', instruction: 'Inspect tread depth across 3/4 breadth (min 1mm), sidewall cuts, bulging, and ensure wheel nut alignment pointers match.' },
+  { id: 2, category: 'Visibility', title: 'Mirrors, Windows & Class V/VI Direct Vision', instruction: 'Ensure all rear-view, wide-angle, close-proximity, and front mirrors are clean, unbroken, and properly aligned.' },
+  { id: 3, category: 'Visibility', title: 'Windscreen Wipers, Washers & Demister', instruction: 'Test washer jets, check wiper blades for splits or tears, and confirm cab demister fan clears windscreen.' },
+  { id: 4, category: 'Lighting', title: 'Front Lamps, Indicators & Hazard Warning Flashers', instruction: 'Check sidelights, dipped beam, main beam, day-running lights, and verify hazard flashers operate all indicators.' },
+  { id: 5, category: 'Cab Integrity', title: 'Cab Doors, Steps & External Mountings', instruction: 'Verify doors latch and seal correctly, grab handles are firm, and step treads are free of oil or excessive mud.' },
+  { id: 6, category: 'Under Bonnet', title: 'Engine Fluid Levels, Coolant & Battery Security', instruction: 'Check engine oil, coolant expansion tank, power steering fluid, and ensure battery box cover is clamped shut.' },
+  { id: 7, category: 'Cab Controls', title: 'Steering Play & Audible Warning Horn', instruction: 'Inspect steering wheel for excessive free movement and test horn for clear, audible warning tone.' },
+  { id: 8, category: 'Instrumentation', title: 'Dashboard Gauges, Warning Lights & ABS/EBS', instruction: 'Confirm ABS/EBS warning lights extinguish after initial ignition self-test, and gauges display correct system status.' },
+  { id: 9, category: 'Pneumatics', title: 'Air Build-up, Footbrake & Park Brake Operation', instruction: 'Charge pneumatic reservoirs to governor cut-out (8.5-10 bar). Verify handbrake holds tractor and footbrake responds.' },
+  { id: 10, category: 'Compliance', title: 'Tachograph Calibration Seal & Driver Card Lock', instruction: 'Inspect tachograph calibration plate, verify seal integrity, UTC clock accuracy, and digital card lock mechanism.' },
+  { id: 11, category: 'Cab Interior', title: 'Seatbelts, Seats & Interior Cab Mountings', instruction: 'Examine driver and passenger seatbelts for fraying, test inertia reel lock, and check seat air-suspension anchor.' },
+  { id: 12, category: 'Emissions', title: 'Exhaust System & AdBlue Fluid Level', instruction: 'Inspect exhaust for smoke, soot leaks, or loose silencer brackets, and confirm AdBlue tank has sufficient range.' },
+  { id: 13, category: 'Fuel System', title: 'Fuel Tank, Locking Cap & Anti-Siphon Collar', instruction: 'Inspect fuel tank brackets, check for leaks, and confirm fuel cap seal and anti-siphon collar are intact.' },
+  { id: 14, category: 'Coupling', title: 'Air Lines (Suzies) & Electrical Susie Cables', instruction: 'Check red emergency and yellow service air lines for kinks, chafing, and ensure 24N/24S or ISO electrical cables are locked.' },
+  { id: 15, category: 'Coupling', title: '5th Wheel Mechanism & Safety Dog-Clip Pin', instruction: 'Visually verify jaws are fully engaged around trailer kingpin, release arm is home, and dog-clip pin is inserted.' },
+  { id: 16, category: 'Trailer Front', title: 'Trailer Landing Legs & Winder Handle Stowage', instruction: 'Ensure landing legs are wound fully up, footpads clear road surface, and winding handle is securely stowed.' },
+  { id: 17, category: 'Protection', title: 'Sideguards & Spray Suppression Flaps', instruction: 'Inspect lateral protection sideguards for bends, cracks, and check mudflaps for compliance and secure mounting.' },
+  { id: 18, category: 'Superstructure', title: 'Trailer Curtains, Straps, Buckles & Tensioners', instruction: 'Verify curtain tension, inspect all side straps and buckles for fraying, and check roof pelmet for weather seal.' },
+  { id: 19, category: 'Chassis', title: 'Trailer Chassis, Crossmembers & Twistlocks', instruction: 'Check main chassis beams for weld fractures, crossmember cracks, and ensure twistlocks are locked if containerised.' },
+  { id: 20, category: 'Trailer Running', title: 'Trailer Axle Tyres (Tread, Sidewalls & Pressure)', instruction: 'Check trailer tyres for minimum 1mm tread across 3/4 breadth, sidewall cuts, bulging, and twin-wheel spacing.' },
+  { id: 21, category: 'Trailer Running', title: 'Trailer Wheel Nuts & Torque Check-Pointers', instruction: 'Inspect all trailer wheel nuts, ensuring wheel nut indicator arrows align point-to-point without loosening.' },
+  { id: 22, category: 'Pneumatics', title: 'Trailer Air Tanks & Moisture Drain Valves', instruction: 'Pull manual condensation drain rings under trailer air reservoirs to expel moisture and oil accumulation.' },
+  { id: 23, category: 'Reflectors', title: 'Rear Marker Chevron Boards & Contour Markings', instruction: 'Ensure ECE 70 red/yellow reflective chevron plates are clean, undamaged, and perimeter contour tape is visible.' },
+  { id: 24, category: 'Lighting', title: 'Rear Stop, Tail, Fog & Reversing Lights', instruction: 'Verify all rear lighting clusters illuminate cleanly, lenses are unbroken, and stop lamps illuminate brightly on brake.' },
+  { id: 25, category: 'Identification', title: 'Registration Plates & Number Plate Illumination', instruction: 'Confirm both tractor and trailer registration plates are clean, legible, matching, and bulbs are illuminated.' },
+  { id: 26, category: 'Rear Security', title: 'Rear Underrun Crash Bumper & Rear Door Latches', instruction: 'Check rear underrun bumper bar integrity, inspect barn door hinges, seals, and lock secondary keeper pins.' },
+  { id: 27, category: 'Bridge Safety', title: 'In-Cab Height Indicator vs Physical Trailer Height', instruction: 'Verify in-cab height placard reflects actual physical height of trailer (4.45m / 14ft 7in) before departure.' },
+  { id: 28, category: 'Safety System', title: 'DVS Left-Turn Audible Alarm & Blind Spot Radar', instruction: 'Activate left indicator and test external speaker: Warning vehicle turning left, ensuring blind spot radar is active.' },
+  { id: 29, category: 'Emergency', title: 'Fire Extinguisher & First Aid / Hazchem Kit', instruction: 'Verify in-cab fire extinguisher pressure gauge is in green zone, pin intact, and emergency eye wash kit is present.' },
+  { id: 30, category: 'Cargo Security', title: 'Load Security, Internal Straps & Headboard', instruction: 'Check internal ratchet straps, cargo restraint bars, and verify front headboard has no structural damage.' },
+  { id: 31, category: 'Rear View', title: 'Reversing Camera & Blind Spot Monitor Display', instruction: 'Check cab screen reversing camera feed, clean camera lens if obscured by road grime, and confirm angle.' },
+  { id: 32, category: 'Final Test', title: 'Final Air Pressure Leakage Hold Test', instruction: 'Hold footbrake firmly depressed for 1 full minute with engine off: system air loss must not exceed 0.5 bar.' },
+];
+
+export const fleetTrailers = [
+  { id: 'TR-8492', label: 'Schmitz Curtain-Sider (4.45m / 14ft 7in)', mot: 'Dec 2026', pmi: 'Passed (4 wks remaining)', rbt: '62%' },
+  { id: 'TR-1102', label: 'Montracon Box Trailer (4.20m / 13ft 9in)', mot: 'Oct 2026', pmi: 'Passed (2 wks remaining)', rbt: '65%' },
+  { id: 'TR-9041', label: 'Gray & Adams Reefer (4.00m / 13ft 1in)', mot: 'Jan 2027', pmi: 'Passed (5 wks remaining)', rbt: '59%' },
+];
