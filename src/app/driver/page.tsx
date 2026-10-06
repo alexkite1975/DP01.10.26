@@ -14,8 +14,7 @@ import { dvsaChecklist, fleetTrailers } from '@/data/dvsaChecklist';
 
 export default function DriverDashboard() {
   const [mounted, setMounted] = useState(false);
-  const vehicleReg = 'GN21 EVX'; // Assigned Tractor Registration
-
+  
   const [activeTab, setActiveTab] = useState<'readiness' | 'route' | 'enroute' | 'depot' | 'tacho' | 'tools'>('readiness');
   const [showSosModal, setShowSosModal] = useState(false);
 
