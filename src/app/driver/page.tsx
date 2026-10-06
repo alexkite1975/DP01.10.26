@@ -1,3 +1,4 @@
+import ClaraVoiceAssistant from '@/components/ClaraVoiceAssistant';
 'use client';
 
 import React, { useState } from 'react';
