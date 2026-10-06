@@ -7,7 +7,7 @@ const UserAccessControlPortal = dynamic(() => import('@/components/manager/UserA
 
 export default function AdminControlPlane() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-dvh bg-slate-950 text-white">
       <UserAccessControlPortal />
     </div>
   );

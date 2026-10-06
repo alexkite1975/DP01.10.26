@@ -14,7 +14,7 @@ export default function DriverMasterOS() {
   const [activeTab, setActiveTab] = useState<'walkaround' | 'tacho' | 'safety' | 'route' | 'sites'>('walkaround');
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+    <div className="min-h-dvh bg-slate-950 text-white flex flex-col">
       {/* Top In-Cab Master Navigation Bar */}
       <header className="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
