@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { InCabErrorBoundary } from '@/components/InCabErrorBoundary';
 
 const DriverDashboardView = dynamic(
   () => import('@/components/DriverDashboardView'),
@@ -16,5 +17,9 @@ const DriverDashboardView = dynamic(
 );
 
 export default function DriverPage() {
-  return <DriverDashboardView />;
+  return (
+    <InCabErrorBoundary>
+      <DriverDashboardView />
+    </InCabErrorBoundary>
+  );
 }

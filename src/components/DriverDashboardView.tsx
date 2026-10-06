@@ -132,7 +132,7 @@ export default function DriverDashboardView() {
         setActiveVoiceName(`${v.name} (en-GB)`);
       }
     };
-    syncVoice();
+    if (typeof window !== 'undefined') { syncVoice(); }
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = syncVoice;
     }
