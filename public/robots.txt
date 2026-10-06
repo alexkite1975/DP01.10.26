@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /
+# Drive Partners Proprietary System - Scraping Strictly Prohibited

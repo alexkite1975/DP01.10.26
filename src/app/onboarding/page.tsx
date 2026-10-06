@@ -88,7 +88,35 @@ export default function OnboardingPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 text-left">
-              {/* Option A: HGV Driver */}
+              {/* 1-Tap Google & Apple Open Auth */}
+            <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-3xl space-y-3 sm:col-span-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-bold block text-center">
+                1-Tap Open Authentication
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => alert('✓ Authenticated via Google Open Auth as alexander.kite@drivepartners.app')}
+                  className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs flex items-center justify-center gap-2 shadow-md transition"
+                >
+                  <span className="text-base font-black text-blue-600">G</span> Continue with Google
+                </button>
+                <button
+                  type="button"
+                  onClick={() => alert('✓ Authenticated via Apple Open Auth as alexander.kite@drivepartners.app')}
+                  className="w-full py-3.5 px-4 rounded-2xl bg-slate-950 hover:bg-black border border-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition"
+                >
+                  <span className="text-base"></span> Continue with Apple
+                </button>
+              </div>
+            </div>
+
+            <div className="sm:col-span-2 relative py-1">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
+              <div className="relative flex justify-center text-[10px] uppercase font-mono"><span className="bg-slate-950 px-3 text-slate-500 font-bold">Or Select Role Below</span></div>
+            </div>
+
+            {/* Option A: HGV Driver */}
               <div
                 onClick={() => setRole('driver')}
                 className="group cursor-pointer bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/60 p-6 rounded-3xl space-y-4 transition shadow-xl flex flex-col justify-between"
