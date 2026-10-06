@@ -1,3 +1,4 @@
+// Driver OS v1.0.8 - TDZ Resolved
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -23,8 +24,9 @@ export default function DriverDashboard() {
   const [hasTrailer, setHasTrailer] = useState(true);
   const [selectedTrailer, setSelectedTrailer] = useState('TR-8492');
   const [customTrailer, setCustomTrailer] = useState('');
+    const [walkaroundStep, setWalkaroundStep] = useState(1);
   const [checkStarted, setCheckStarted] = useState(false);
-  const [walkaroundStep, setWalkaroundStep] = useState(1);
+  const [isCheckComplete, setIsCheckComplete] = useState(false);
   const currentItem = dvsaChecklist[walkaroundStep - 1] || dvsaChecklist[0] || {
     id: 1,
     category: 'Tractor Steer',
@@ -143,8 +145,7 @@ export default function DriverDashboard() {
       }
     }
   }, [walkaroundStep, checkStarted, isCheckComplete, voiceGuidance]);
-  const [isCheckComplete, setIsCheckComplete] = useState(false);
-  
+    
   // Real Camera & Defect Evidence
   const [defectPhotos, setDefectPhotos] = useState<{ [step: number]: string }>({});
   
