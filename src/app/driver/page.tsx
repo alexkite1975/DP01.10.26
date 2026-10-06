@@ -1,7 +1,8 @@
-import ClaraVoiceAssistant from '@/components/ClaraVoiceAssistant';
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ClaraVoiceAssistant from '@/components/ClaraVoiceAssistant';
+
 import Link from 'next/link';
 import {
   Truck, ShieldAlert, PhoneCall, Volume2, Radio,
