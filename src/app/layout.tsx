@@ -1,19 +1,16 @@
-import type { Metadata, Viewport } from 'next';
-import './globals.css';
-import ContextualHeader from '@/components/navigation/ContextualHeader';
-import SwipeBackWrapper from '@/components/navigation/SwipeBackWrapper';
-
-export const metadata: Metadata = {
-  title: 'Drive Partners & SmartHaul OS | In-Cab System',
-  description: 'Commercial HGV Navigation, Compliance & Cockpit OS',
-};
+import type { Metadata, Viewport } from "next";
+import "./globals.css";
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
+  viewportFit: "cover",
+  themeColor: "#020617",
+};
+
+export const metadata: Metadata = {
+  title: "SmartHaul OS",
+  description: "Next-Gen Fleet Management & In-Cab Operations",
 };
 
 export default function RootLayout({
@@ -23,21 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark bg-slate-950 text-slate-100">
-      <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossOrigin=""
-        />
-      </head>
-      <body className="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
-        <ContextualHeader />
-        <SwipeBackWrapper>
-          {children}
-        </SwipeBackWrapper>
-      </body>
+      <body className="min-h-dvh antialiased flex flex-col">{children}</body>
     </html>
   );
 }
