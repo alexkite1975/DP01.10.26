@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { redisGeoService } from '@/services/telematics/redisGeoService';
 import { VehicleTelemetryPing } from '@/types/telematics';
