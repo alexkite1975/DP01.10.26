@@ -46,23 +46,90 @@ export default function DriverDashboard() {
   };
 
   // British English Female Voice Speech Engine
+    // Pre-load and cache British Female Voice
+  const [activeVoiceName, setActiveVoiceName] = useState('Loading UK Voice...');
+
+  const getExactBritishFemaleVoice = (): SpeechSynthesisVoice | null => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+    const allVoices = window.speechSynthesis.getVoices();
+    if (!allVoices || allVoices.length === 0) return null;
+
+    // 1. Exact UK Female priority list
+    const preferredUkFemaleNames = [
+      'google uk english female',
+      'sonia',
+      'libby',
+      'hazel',
+      'susan',
+      'serena',
+      'victoria',
+      'martha',
+      'stephanie',
+      'alice'
+    ];
+
+    for (const name of preferredUkFemaleNames) {
+      const match = allVoices.find(v => 
+        (v.lang.replace('_', '-').toLowerCase().startsWith('en-gb')) && 
+        v.name.toLowerCase().includes(name)
+      );
+      if (match) return match;
+    }
+
+    // 2. Any en-GB female voice
+    const anyUkFemale = allVoices.find(v => 
+      (v.lang.replace('_', '-').toLowerCase().startsWith('en-gb')) && 
+      v.name.toLowerCase().includes('female')
+    );
+    if (anyUkFemale) return anyUkFemale;
+
+    // 3. Any en-GB voice (UK English)
+    const anyUk = allVoices.find(v => v.lang.replace('_', '-').toLowerCase().startsWith('en-gb'));
+    if (anyUk) return anyUk;
+
+    return null;
+  };
+
+  useEffect(() => {
+    const syncVoice = () => {
+      const v = getExactBritishFemaleVoice();
+      if (v) {
+        setActiveVoiceName(`${v.name} (en-GB)`);
+      }
+    };
+    syncVoice();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = syncVoice;
+    }
+  }, []);
+
   const speakBritishClara = (text: string) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-    const ukFemale = voices.find(v => 
-      (v.lang.startsWith('en-GB') || v.lang === 'en_GB') && 
-      (v.name.includes('Female') || v.name.includes('Sonia') || v.name.includes('Libby') || 
-       v.name.includes('Serena') || v.name.includes('Victoria') || v.name.includes('Martha') ||
-       v.name.includes('Google UK English Female') || v.name.includes('Hazel') || v.name.includes('Susan'))
-    ) || voices.find(v => v.lang.startsWith('en-GB') || v.lang === 'en_GB');
 
-    if (ukFemale) utterance.voice = ukFemale;
-    utterance.lang = 'en-GB';
-    utterance.rate = 0.88;
-    utterance.pitch = 1.05;
-    window.speechSynthesis.speak(utterance);
+    const doSpeak = () => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const ukVoice = getExactBritishFemaleVoice();
+
+      if (ukVoice) {
+        utterance.voice = ukVoice;
+        setActiveVoiceName(`${ukVoice.name} (en-GB)`);
+      }
+      utterance.lang = 'en-GB';
+      utterance.rate = 0.88; // Clear British cadence
+      utterance.pitch = 1.05;
+
+      window.speechSynthesis.speak(utterance);
+    };
+
+    // If voices aren't loaded yet, wait for onvoiceschanged
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        doSpeak();
+      };
+    } else {
+      doSpeak();
+    }
   };
 
   // Auto-speak statutory check whenever step advances if Voice Guidance is ON
