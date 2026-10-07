@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Truck, ShieldCheck, Briefcase, KeyRound, ArrowRight,
-  Lock, LogOut, CheckCircle2, ShieldAlert
+  Lock, LogOut, CheckCircle2, ShieldAlert, Repeat
 } from 'lucide-react';
 
 export type UserRole = 'guest' | 'driver' | 'haulier' | 'admin';
@@ -165,42 +165,42 @@ export default function HomePage() {
         </div>
 
         {/* Workflow Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Card 1: Onboarding */}
           <Link
             href="/onboarding"
-            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-blue-500/50 p-6 rounded-3xl transition shadow-xl flex flex-col justify-between space-y-6"
+            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-blue-500/50 p-5 rounded-3xl transition shadow-xl flex flex-col justify-between space-y-5"
           >
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-black text-white group-hover:text-blue-400 transition">
-                1. Onboarding & Registration
+              <h3 className="text-base font-black text-white group-hover:text-blue-400 transition">
+                1. Onboarding
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Driver & haulier intake with 1-Tap Google & Apple Open Auth, DVLA licence OCR, and D906 Sign-on-Glass.
+                Driver &amp; haulier intake with 1-Tap Google Open Auth, DVLA licence OCR, and D906 Sign-on-Glass.
               </p>
             </div>
             <span className="text-xs font-mono font-bold text-blue-400 flex items-center gap-1 group-hover:translate-x-1 transition">
-              Launch Onboarding <ArrowRight className="w-4 h-4" />
+              Launch Intake <ArrowRight className="w-4 h-4" />
             </span>
           </Link>
 
           {/* Card 2: Driver In-Cab OS */}
           <Link
             href="/driver"
-            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 p-6 rounded-3xl transition shadow-xl flex flex-col justify-between space-y-6"
+            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 p-5 rounded-3xl transition shadow-xl flex flex-col justify-between space-y-5"
           >
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
                 <Truck className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-black text-white group-hover:text-emerald-400 transition">
+              <h3 className="text-base font-black text-white group-hover:text-emerald-400 transition">
                 2. Driver In-Cab OS
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                32-Point DVSA Vehicle Check with trailer database, Bridge Strike Shield, £45/hr Demurrage, and SOS.
+                32-Point DVSA Vehicle Check, Tacho AI, Bridge Radar, Relief Shifts, and £45/hr Demurrage.
               </p>
             </div>
             <span className="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1 group-hover:translate-x-1 transition">
@@ -208,24 +208,45 @@ export default function HomePage() {
             </span>
           </Link>
 
-          {/* Card 3: Haulier Portal & Haulage Partners */}
+          {/* Card 3: Haulier Portal & Fleet */}
           <Link
             href="/haulier"
-            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 p-6 rounded-3xl transition shadow-xl flex flex-col justify-between space-y-6"
+            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 p-5 rounded-3xl transition shadow-xl flex flex-col justify-between space-y-5"
           >
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
                 <Briefcase className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-black text-white group-hover:text-cyan-400 transition">
-                3. Haulier Fleet & Freight
+              <h3 className="text-base font-black text-white group-hover:text-cyan-400 transition">
+                3. Haulier Fleet Command
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                1Hz telematics map, direct £28/hr dispatch, and the full 6-step Haulage Partners freight exchange.
+                1Hz telematics map, fleet VOR lockout, shift dispatch, and self-billing payroll.
               </p>
             </div>
             <span className="text-xs font-mono font-bold text-cyan-400 flex items-center gap-1 group-hover:translate-x-1 transition">
               Launch Haulier Portal <ArrowRight className="w-4 h-4" />
+            </span>
+          </Link>
+
+          {/* Card 4: Haulage & Freight Exchange */}
+          <Link
+            href="/freight"
+            className="group bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 p-5 rounded-3xl transition shadow-xl flex flex-col justify-between space-y-5"
+          >
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center">
+                <Repeat className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-black text-white group-hover:text-amber-400 transition">
+                4. Haulage &amp; Freight Exchange
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                For Businesses &amp; Hauliers: Post 44t cargo, broadcast cascading tenders, and eliminate empty deadhead miles.
+              </p>
+            </div>
+            <span className="text-xs font-mono font-bold text-amber-400 flex items-center gap-1 group-hover:translate-x-1 transition">
+              Launch Freight Market <ArrowRight className="w-4 h-4" />
             </span>
           </Link>
         </div>

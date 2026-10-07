@@ -1,11 +1,13 @@
 import { DriverVehicleProfile } from '../types';
 
 export const TOMTOM_API_KEY =
+  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_TOMTOM_API_KEY) ||
   (typeof window !== 'undefined' && (window as any).TOMTOM_API_KEY) ||
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TOMTOM_API_KEY) ||
   '01nsqhBOfhiCZBqY6W8n14RTcstjuFC2';
 
 export const TOMTOM_MAPS_KEY =
+  (typeof process !== 'undefined' && (process.env?.NEXT_PUBLIC_TOMTOM_MAPS_KEY || process.env?.NEXT_PUBLIC_TOMTOM_API_KEY)) ||
   (typeof window !== 'undefined' && (window as any).TOMTOM_MAPS_KEY) ||
   (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_TOMTOM_MAPS_KEY || import.meta.env?.VITE_TOMTOM_API_KEY)) ||
   '01nsqhBOfhiCZBqY6W8n14RTcstjuFC2';

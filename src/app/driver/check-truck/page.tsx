@@ -3,11 +3,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function InspectionsWalkaroundRedirect() {
+export default function CheckTruckRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect directly to the dedicated mobile Driver Walkaround page
+    // Check truck is deprecated; seamlessly redirect to the dedicated Driver Walkaround page
     router.replace('/driver/walkaround');
   }, [router]);
 

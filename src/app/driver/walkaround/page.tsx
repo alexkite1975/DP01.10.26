@@ -3,18 +3,18 @@
 import React from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { ArrowLeft, Clock } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ShieldCheck, FileText } from 'lucide-react';
 
-const TachoScanApp = dynamic(() => import('@/components/tacho/TachoScanApp'), {
+const VehicleCheckApp = dynamic(() => import('@/components/vehicleCheck/VehicleCheckApp'), {
   ssr: false,
   loading: () => (
     <div className="p-8 text-center text-slate-400 font-mono text-sm">
-      Loading Tacho AI & .DDD Compliance...
+      Loading Driver Walkaround...
     </div>
   )
 });
 
-export default function DriverTachoPage() {
+export default function DriverWalkaroundPage() {
   return (
     <div className="min-h-dvh bg-slate-950 text-white flex flex-col font-sans">
       {/* Mobile Top App Bar */}
@@ -30,20 +30,24 @@ export default function DriverTachoPage() {
           </Link>
           <div>
             <h1 className="text-sm font-bold text-white flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-indigo-400" /> Tacho AI & .DDD
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Driver Walkaround
             </h1>
-            <p className="text-[10px] text-slate-400 font-mono">EU 561/2006 & WTD Compliance</p>
+            <p className="text-[10px] text-slate-400 font-mono">DVSA Statutory 32-Point Check</p>
           </div>
         </div>
 
-        <span className="text-[11px] font-semibold px-2 py-1 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-800/60">
-          SE5000 / VDO
-        </span>
+        {/* Clean Relevant Link Only */}
+        <Link
+          href="/driver/inspections/signoff"
+          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shadow-md transition"
+        >
+          <FileText className="w-3.5 h-3.5" /> Sign-Off
+        </Link>
       </header>
 
       {/* Mobile-Optimized Body (Single-Purpose Tool) */}
       <main className="flex-1 w-full max-w-2xl mx-auto p-2 sm:p-4 overflow-y-auto">
-        <TachoScanApp />
+        <VehicleCheckApp />
       </main>
     </div>
   );

@@ -17,7 +17,7 @@ export default function SelectVehiclePage() {
       localStorage.setItem("active_trailer_id", selectedTrailer);
       
       // Proceed seamlessly to Step 2: Walkaround check
-      router.push("/driver/inspections/walkaround");
+      router.push("/driver/walkaround");
     }
   };
 
@@ -28,7 +28,7 @@ export default function SelectVehiclePage() {
       currentStep={1}
       totalSteps={4}
       backRoute="/driver"
-      nextRoute={selectedVehicle ? "/driver/inspections/walkaround" : undefined}
+      nextRoute={selectedVehicle ? "/driver/walkaround" : undefined}
       footerActions={
         <button
           onClick={handleNextStep}

@@ -74,7 +74,7 @@ export default function SignOffPage() {
       subtitle={`Ready to submit report`}
       currentStep={3}
       totalSteps={4}
-      backRoute="/driver/inspections/walkaround"
+      backRoute="/driver/walkaround"
       nextRoute="/driver"
       footerActions={
         <button

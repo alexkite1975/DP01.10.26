@@ -48,7 +48,10 @@ interface RouteOptimiserAppProps {
   onSwitchToSafetyShield?: () => void;
 }
 
-const MAPS_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GOOGLE_MAPS_API_KEY) || '';
+const MAPS_API_KEY =
+  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) ||
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GOOGLE_MAPS_API_KEY) ||
+  '';
 const DEMO_MAP_ID  = 'DEMO_HGV_MAP_ID';
 
 // ─── Google Maps Route Polyline Subcomponent ──────────────────────────────────

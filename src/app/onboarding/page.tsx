@@ -457,10 +457,10 @@ export default function OnboardingPage() {
                     Launch Driver In-Cab Dashboard <ArrowRight className="w-4 h-4" />
                   </Link>
                   <Link
-                    href="/driver/check-truck"
+                    href="/driver/walkaround"
                     className="px-6 py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm transition flex items-center justify-center gap-2"
                   >
-                    <CheckSquare className="w-4 h-4 text-emerald-400" /> Start Vehicle Check
+                    <CheckSquare className="w-4 h-4 text-emerald-400" /> Driver Walkaround
                   </Link>
                 </div>
               </div>
