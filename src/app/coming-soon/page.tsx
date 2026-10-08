@@ -22,11 +22,17 @@ import {
   FileText,
   Search,
   Check,
-  X
+  X,
+  Play
 } from 'lucide-react';
+import { TachoScanMarketingVideo } from '@/components/marketing/TachoScanMarketingVideo';
+import { DriverPreRegisterModal } from '@/components/marketing/DriverPreRegisterModal';
 
 export default function ComingSoonPage() {
   const router = useRouter();
+
+  // Driver Pre-Registration Modal State
+  const [isDriverPreRegisterOpen, setIsDriverPreRegisterOpen] = useState(false);
 
   // VIP Login Modal State
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -163,14 +169,26 @@ export default function ComingSoonPage() {
           </div>
         </div>
 
-        {/* Colleague Access Button */}
-        <button
-          onClick={() => setIsLoginModalOpen(true)}
-          className="px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/50 text-xs font-mono text-cyan-300 hover:text-cyan-200 flex items-center gap-2 transition-all shadow-sm cursor-pointer touch-press"
-        >
-          <Lock className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="font-bold">Colleague Access</span>
-        </button>
+        {/* Header Action Buttons */}
+        <div className="flex items-center gap-2">
+          {/* Driver Pre-Registration CTA */}
+          <button
+            onClick={() => setIsDriverPreRegisterOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs font-mono flex items-center gap-1.5 transition shadow-glow-blue cursor-pointer touch-press"
+          >
+            <Truck className="w-3.5 h-3.5 text-slate-950" />
+            <span className="hidden sm:inline">Driver</span> Pre-Register
+          </button>
+
+          {/* Colleague Access Button */}
+          <button
+            onClick={() => setIsLoginModalOpen(true)}
+            className="px-3 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/50 text-xs font-mono text-cyan-300 hover:text-cyan-200 flex items-center gap-1.5 transition-all shadow-sm cursor-pointer touch-press"
+          >
+            <Lock className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="font-bold hidden sm:inline">Colleague</span> Access
+          </button>
+        </div>
       </header>
 
       {/* Main Hero & Spotlight */}
@@ -179,7 +197,7 @@ export default function ComingSoonPage() {
         <div className="text-center space-y-4 max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-bold">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span>COMING SOON • PRIVATE FLEET TESTING</span>
+            <span>NOW OPEN • DRIVER BETA PRE-REGISTRATION</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
@@ -189,6 +207,24 @@ export default function ComingSoonPage() {
           <p className="text-sm sm:text-base text-slate-400 leading-relaxed font-sans">
             DrivePartners is modernizing commercial transport with unified in-cab AI, direct haulier freight exchange, and automated statutory compliance.
           </p>
+
+          {/* Exclusive Driver Pre-Registration CTA */}
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={() => setIsDriverPreRegisterOpen(true)}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-xs sm:text-sm font-mono flex items-center justify-center gap-2 shadow-glow-blue transition transform hover:scale-105 cursor-pointer"
+            >
+              <Truck className="w-4 h-4 text-slate-950" />
+              <span>Pre-Register as a Driver (Tacho-Scan Beta)</span>
+              <ArrowRight className="w-4 h-4 text-slate-950" />
+            </button>
+            <Link
+              href="/pre-register"
+              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline underline-offset-4"
+            >
+              Direct Pre-Register Link ➔
+            </Link>
+          </div>
         </div>
 
         {/* Featured Spotlight Card: Tacho-Scan AI */}
@@ -224,6 +260,17 @@ export default function ComingSoonPage() {
                 <div className="text-emerald-400 font-black text-sm">28 Days DVSA</div>
               </div>
             </div>
+          </div>
+
+          {/* 40-Second Interactive Marketing Video Tour */}
+          <div className="space-y-2.5 pt-2">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="text-white font-bold flex items-center gap-2">
+                <Play className="w-4 h-4 text-cyan-400" /> Watch the 40-Second Feature Video:
+              </span>
+              <span className="text-cyan-400">00:40 Runtime • Interactive In-Cab Demo</span>
+            </div>
+            <TachoScanMarketingVideo onPreRegisterClick={() => setIsDriverPreRegisterOpen(true)} />
           </div>
 
           {/* Key Pillars of Tacho-Scan AI */}
@@ -491,6 +538,12 @@ export default function ComingSoonPage() {
           </div>
         </div>
       )}
+
+      {/* Driver Early Access Pre-Registration Modal */}
+      <DriverPreRegisterModal
+        isOpen={isDriverPreRegisterOpen}
+        onClose={() => setIsDriverPreRegisterOpen(false)}
+      />
     </div>
   );
 }
