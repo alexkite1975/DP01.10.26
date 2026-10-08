@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { CockpitBottomDock } from "@/components/navigation/CockpitBottomDock";
+import { VipPreviewBanner } from "@/components/navigation/VipPreviewBanner";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark bg-slate-950 text-slate-100">
       <body className="min-h-dvh antialiased flex flex-col bg-cockpit-grid pb-20 sm:pb-16">
+        <VipPreviewBanner />
         {children}
         <CockpitBottomDock />
       </body>
