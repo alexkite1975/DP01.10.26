@@ -95,6 +95,17 @@ export const NATION_NUMERIC_CODES: Record<number, string> = {
  */
 export const SAMPLE_DDD_PROFILES = [
   {
+    id: 'sample-ddd-alex-kite',
+    filename: 'real_driver_card.DDD',
+    driverName: 'Alexander James Kite',
+    cardNumber: 'DB25029078179500',
+    licenceNumber: 'KITE9707185AJ9ZM',
+    vehicleReg: 'SJ70HFR',
+    fileSizeBytes: 24225,
+    description: 'Live USB-C Card Reader Download: 235 days DVSA ledger, 198 UK HGVs driven, 100% compliant shift.',
+    status: 'COMPLIANT'
+  },
+  {
     id: 'sample-ddd-compliant',
     filename: 'C_20260927_0845_AJAMES_UK9021482.DDD',
     driverName: 'Alexander James',
@@ -154,47 +165,46 @@ export function extractElementaryFiles(buffer: Uint8Array): RawElementaryFile[] 
 
     // Check if this looks like a known tachograph EF tag (0x05XX)
     if (b0 === 0x05) {
-      offset += 2;
-      let len = 0;
+      let tagName = `EF_UNKNOWN_0x${tag.toString(16).toUpperCase()}`;
+      if (tag === TACHO_EF_TAGS.EF_APPLICATION_IDENTIFICATION) tagName = 'EF_APPLICATION_IDENTIFICATION';
+      else if (tag === TACHO_EF_TAGS.EF_IDENTIFICATION) tagName = 'EF_IDENTIFICATION';
+      else if (tag === TACHO_EF_TAGS.EF_DRIVING_LICENCE_INFO) tagName = 'EF_DRIVING_LICENCE_INFO';
+      else if (tag === TACHO_EF_TAGS.EF_DRIVER_ACTIVITY_DATA) tagName = 'EF_DRIVER_ACTIVITY_DATA';
+      else if (tag === TACHO_EF_TAGS.EF_VEHICLES_USED) tagName = 'EF_VEHICLES_USED';
+      else if (tag === TACHO_EF_TAGS.EF_PLACES) tagName = 'EF_PLACES';
+      else if (tag === TACHO_EF_TAGS.EF_EVENTS_DATA) tagName = 'EF_EVENTS_DATA';
+      else if (tag === TACHO_EF_TAGS.EF_FAULTS_DATA) tagName = 'EF_FAULTS_DATA';
+      else if (tag === TACHO_EF_TAGS.EF_CONTROL_ACTIVITY_DATA) tagName = 'EF_CONTROL_ACTIVITY_DATA';
+      else if (tag === TACHO_EF_TAGS.EF_SPECIFIC_CONDITIONS) tagName = 'EF_SPECIFIC_CONDITIONS';
 
-      // Tachograph Elementary Files use 2-byte big-endian length or ASN.1 length
-      if (offset + 1 < buffer.length) {
-        const firstLen = buffer[offset];
-        if (firstLen === 0x81 && offset + 1 < buffer.length) {
-          len = buffer[offset + 1];
-          offset += 2;
-        } else if (firstLen === 0x82 && offset + 2 < buffer.length) {
-          len = (buffer[offset + 1] << 8) | buffer[offset + 2];
-          offset += 3;
-        } else {
-          // Standard 2-byte big-endian length (Annex 1B/1C)
-          len = (buffer[offset] << 8) | buffer[offset + 1];
-          offset += 2;
+      // 1. Try standard 5-byte .DDD header: tag (2 bytes) + type (1 byte, 0x00) + length (2 bytes big-endian)
+      if (offset + 5 <= buffer.length) {
+        const len5 = (buffer[offset + 3] << 8) | buffer[offset + 4];
+        if (len5 > 0 && offset + 5 + len5 <= buffer.length) {
+          efs.push({
+            tag,
+            tagName,
+            length: len5,
+            data: buffer.subarray(offset + 5, offset + 5 + len5)
+          });
+          offset += 5 + len5;
+          continue;
         }
       }
 
-      if (len > 0 && offset + len <= buffer.length) {
-        const slice = buffer.subarray(offset, offset + len);
-        let tagName = `EF_UNKNOWN_0x${tag.toString(16).toUpperCase()}`;
-
-        if (tag === TACHO_EF_TAGS.EF_APPLICATION_IDENTIFICATION) tagName = 'EF_APPLICATION_IDENTIFICATION';
-        else if (tag === TACHO_EF_TAGS.EF_IDENTIFICATION) tagName = 'EF_IDENTIFICATION';
-        else if (tag === TACHO_EF_TAGS.EF_DRIVING_LICENCE_INFO) tagName = 'EF_DRIVING_LICENCE_INFO';
-        else if (tag === TACHO_EF_TAGS.EF_DRIVER_ACTIVITY_DATA) tagName = 'EF_DRIVER_ACTIVITY_DATA';
-        else if (tag === TACHO_EF_TAGS.EF_VEHICLES_USED) tagName = 'EF_VEHICLES_USED';
-        else if (tag === TACHO_EF_TAGS.EF_PLACES) tagName = 'EF_PLACES';
-        else if (tag === TACHO_EF_TAGS.EF_EVENTS_DATA) tagName = 'EF_EVENTS_DATA';
-        else if (tag === TACHO_EF_TAGS.EF_FAULTS_DATA) tagName = 'EF_FAULTS_DATA';
-
-        efs.push({
-          tag,
-          tagName,
-          length: len,
-          data: slice
-        });
-
-        offset += len;
-        continue;
+      // 2. Try 4-byte header: tag (2 bytes) + length (2 bytes big-endian)
+      if (offset + 4 <= buffer.length) {
+        const len4 = (buffer[offset + 2] << 8) | buffer[offset + 3];
+        if (len4 > 0 && offset + 4 + len4 <= buffer.length) {
+          efs.push({
+            tag,
+            tagName,
+            length: len4,
+            data: buffer.subarray(offset + 4, offset + 4 + len4)
+          });
+          offset += 4 + len4;
+          continue;
+        }
       }
     }
 
@@ -212,7 +222,6 @@ function decodeAsciiString(bytes: Uint8Array): string {
   let str = '';
   for (let i = 0; i < bytes.length; i++) {
     const code = bytes[i];
-    if (code === 0 || code === 0xff) break; // null or padding
     if (code >= 32 && code <= 126) {
       str += String.fromCharCode(code);
     }
@@ -247,32 +256,48 @@ export function parseRawDddBinary(
   // 2. Process EF_IDENTIFICATION (0x0520)
   const idEf = efs.find((e) => e.tag === TACHO_EF_TAGS.EF_IDENTIFICATION);
   if (idEf && idEf.data.length >= 70) {
-    // Card Number: 16 ASCII bytes starting around offset 0 or 2
-    const parsedCardNum = decodeAsciiString(idEf.data.subarray(0, 16));
-    if (parsedCardNum.length >= 8) {
-      cardNumber = parsedCardNum;
-    }
-
     // Member state byte
-    const memberCode = idEf.data[16];
-    if (NATION_NUMERIC_CODES[memberCode]) {
-      memberState = NATION_NUMERIC_CODES[memberCode];
+    const nationByte = idEf.data[0];
+    if (NATION_NUMERIC_CODES[nationByte]) {
+      memberState = NATION_NUMERIC_CODES[nationByte];
     }
 
-    // Driver Surname (36 bytes) & First Names (36 bytes)
-    const surname = decodeAsciiString(idEf.data.subarray(24, 60));
-    const firstNames = decodeAsciiString(idEf.data.subarray(60, 96));
-    if (surname || firstNames) {
-      driverName = `${firstNames} ${surname}`.trim();
+    // Card Number: 16 ASCII bytes starting at offset 1 (or 0)
+    const cardCandidate = decodeAsciiString(idEf.data.subarray(1, 17));
+    if (cardCandidate.length >= 8) {
+      cardNumber = cardCandidate;
+    } else {
+      const parsed0 = decodeAsciiString(idEf.data.subarray(0, 16));
+      if (parsed0.length >= 8) cardNumber = parsed0;
+    }
+
+    // Driver Surname (36 bytes) & First Names (36 bytes) in Annex 1B/1C
+    if (idEf.data.length >= 137) {
+      const rawSurname = idEf.data.subarray(65, 101);
+      const rawFirst = idEf.data.subarray(101, 137);
+      const surname = decodeAsciiString(rawSurname[0] <= 0x05 ? rawSurname.subarray(1) : rawSurname);
+      const firstNames = decodeAsciiString(rawFirst[0] <= 0x05 ? rawFirst.subarray(1) : rawFirst);
+      if (surname || firstNames) {
+        driverName = `${firstNames} ${surname}`.trim();
+      }
+    } else {
+      const surname = decodeAsciiString(idEf.data.subarray(24, 60));
+      const firstNames = decodeAsciiString(idEf.data.subarray(60, 96));
+      if (surname || firstNames) {
+        driverName = `${firstNames} ${surname}`.trim();
+      }
     }
   }
 
   // 3. Process EF_DRIVING_LICENCE_INFO (0x0521)
   const licenceEf = efs.find((e) => e.tag === TACHO_EF_TAGS.EF_DRIVING_LICENCE_INFO);
-  if (licenceEf && licenceEf.data.length >= 20) {
-    const parsedLicence = decodeAsciiString(licenceEf.data.subarray(1, 17));
-    if (parsedLicence.length >= 6) {
-      licenceNumber = parsedLicence;
+  if (licenceEf && licenceEf.data.length >= 37) {
+    if (licenceEf.data.length >= 53) {
+      const parsed = decodeAsciiString(licenceEf.data.subarray(37, 53));
+      if (parsed.length >= 6) licenceNumber = parsed;
+    } else {
+      const parsedLicence = decodeAsciiString(licenceEf.data.subarray(1, 17));
+      if (parsedLicence.length >= 6) licenceNumber = parsedLicence;
     }
   }
 
@@ -280,59 +305,171 @@ export function parseRawDddBinary(
   const vehicleEf = efs.find((e) => e.tag === TACHO_EF_TAGS.EF_VEHICLES_USED);
   let odoStartKm = 412850;
   let odoEndKm = 413280;
-  if (vehicleEf && vehicleEf.data.length >= 28) {
+  if (vehicleEf && vehicleEf.data.length >= 33) {
+    let latestEpoch = 0;
+    for (let r = 2; r + 31 <= vehicleEf.data.length; r += 31) {
+      const odoStart = (vehicleEf.data[r] << 16) | (vehicleEf.data[r + 1] << 8) | vehicleEf.data[r + 2];
+      const odoEnd = (vehicleEf.data[r + 3] << 16) | (vehicleEf.data[r + 4] << 8) | vehicleEf.data[r + 5];
+      const lastUse =
+        (vehicleEf.data[r + 10] << 24) |
+        (vehicleEf.data[r + 11] << 16) |
+        (vehicleEf.data[r + 12] << 8) |
+        vehicleEf.data[r + 13];
+      const rawVrn = vehicleEf.data.subarray(r + 15, r + 29);
+      const vrn = decodeAsciiString(rawVrn[0] <= 0x05 ? rawVrn.subarray(1) : rawVrn);
+      if (vrn && vrn.length >= 3 && lastUse > latestEpoch && odoEnd >= odoStart) {
+        latestEpoch = lastUse;
+        vehicleReg = vrn;
+        odoStartKm = odoStart;
+        odoEndKm = odoEnd;
+      }
+    }
+  } else if (vehicleEf && vehicleEf.data.length >= 28) {
     const regStr = decodeAsciiString(vehicleEf.data.subarray(9, 23));
-    if (regStr.length >= 4) {
-      vehicleReg = regStr;
-    }
-    // Read 3-byte odometers if present
-    const odoStart = (vehicleEf.data[23] << 16) | (vehicleEf.data[24] << 8) | vehicleEf.data[25];
-    const odoEnd = (vehicleEf.data[26] << 16) | (vehicleEf.data[27] << 8) | vehicleEf.data[28];
-    if (odoStart > 0 && odoEnd >= odoStart) {
-      odoStartKm = odoStart;
-      odoEndKm = odoEnd;
-    }
+    if (regStr.length >= 4) vehicleReg = regStr;
   }
 
   // 5. Process EF_DRIVER_ACTIVITY_DATA (0x0504)
   const activityEf = efs.find((e) => e.tag === TACHO_EF_TAGS.EF_DRIVER_ACTIVITY_DATA);
   const parsedActivities: TachographActivityBlock[] = [];
 
-  if (activityEf && activityEf.data.length >= 10) {
-    // Read 16-bit activity words
-    // Format: 2 bits activity type, 1 bit crew, 1 bit slot, 12 bits minutes from 00:00
-    let lastMinute = 0;
-    for (let i = 4; i + 2 <= activityEf.data.length; i += 2) {
-      const word = (activityEf.data[i] << 8) | activityEf.data[i + 1];
-      const actTypeBits = (word >> 14) & 0x03;
-      const durationMins = word & 0x0fff;
+  if (activityEf && activityEf.data.length >= 14) {
+    interface DecodedDay {
+      date: string;
+      distanceKm: number;
+      activities: TachographActivityBlock[];
+      driveMinutes: number;
+      workMinutes: number;
+      restMinutes: number;
+      poaMinutes: number;
+    }
+    const days: DecodedDay[] = [];
 
-      if (durationMins <= 0 || durationMins > 1440) continue;
+    for (let i = 0; i + 14 <= activityEf.data.length; i++) {
+      const epoch =
+        (activityEf.data[i] << 24) |
+        (activityEf.data[i + 1] << 16) |
+        (activityEf.data[i + 2] << 8) |
+        activityEf.data[i + 3];
+      const d = new Date(epoch * 1000);
+      if (
+        d.getFullYear() >= 2024 &&
+        d.getFullYear() <= 2028 &&
+        d.getUTCHours() === 0 &&
+        d.getUTCMinutes() === 0 &&
+        d.getUTCSeconds() === 0 &&
+        i >= 2
+      ) {
+        const recordLength = (activityEf.data[i - 2] << 8) | activityEf.data[i - 1];
+        const distanceKm = (activityEf.data[i + 6] << 8) | activityEf.data[i + 7];
+        const dayActs: TachographActivityBlock[] = [];
+        let prevMin = 0;
+        let prevAct: 'DRIVING' | 'WORK' | 'AVAILABILITY' | 'REST' = 'REST';
+        let dayDrive = 0, dayWork = 0, dayRest = 0, dayPoa = 0;
 
-      let activityType: 'DRIVING' | 'WORK' | 'AVAILABILITY' | 'REST' = 'REST';
-      if (actTypeBits === 3) activityType = 'DRIVING';
-      else if (actTypeBits === 2) activityType = 'WORK';
-      else if (actTypeBits === 1) activityType = 'AVAILABILITY';
-      else activityType = 'REST';
+        for (let a = i + 8; a + 2 <= i + recordLength && a + 2 <= activityEf.data.length; a += 2) {
+          const word = (activityEf.data[a] << 8) | activityEf.data[a + 1];
+          const actBits = (word >> 11) & 0x03;
+          const minuteOfDay = word & 0x07ff;
+          if (minuteOfDay > 1440) break;
 
-      const startMin = lastMinute;
-      const endMin = Math.min(1440, startMin + durationMins);
+          const actType: 'DRIVING' | 'WORK' | 'AVAILABILITY' | 'REST' =
+            actBits === 3 ? 'DRIVING' : actBits === 2 ? 'WORK' : actBits === 1 ? 'AVAILABILITY' : 'REST';
+          const dur = minuteOfDay - prevMin;
+          if (dur > 0) {
+            const sH = Math.floor(prevMin / 60).toString().padStart(2, '0');
+            const sM = (prevMin % 60).toString().padStart(2, '0');
+            const eH = Math.floor(minuteOfDay / 60).toString().padStart(2, '0');
+            const eM = (minuteOfDay % 60).toString().padStart(2, '0');
+            dayActs.push({
+              timeStart: `${sH}:${sM}`,
+              timeEnd: `${eH}:${eM}`,
+              durationMinutes: dur,
+              activityType: prevAct,
+              speedKmh: prevAct === 'DRIVING' ? 84 : 0
+            });
+            if (prevAct === 'DRIVING') dayDrive += dur;
+            else if (prevAct === 'WORK') dayWork += dur;
+            else if (prevAct === 'AVAILABILITY') dayPoa += dur;
+            else dayRest += dur;
+          }
+          prevMin = minuteOfDay;
+          prevAct = actType;
+        }
 
-      const startH = Math.floor(startMin / 60).toString().padStart(2, '0');
-      const startM = (startMin % 60).toString().padStart(2, '0');
-      const endH = Math.floor(endMin / 60).toString().padStart(2, '0');
-      const endM = (endMin % 60).toString().padStart(2, '0');
+        if (prevMin < 1440) {
+          const dur = 1440 - prevMin;
+          const sH = Math.floor(prevMin / 60).toString().padStart(2, '0');
+          const sM = (prevMin % 60).toString().padStart(2, '0');
+          dayActs.push({
+            timeStart: `${sH}:${sM}`,
+            timeEnd: '24:00',
+            durationMinutes: dur,
+            activityType: prevAct,
+            speedKmh: 0
+          });
+          if (prevAct === 'DRIVING') dayDrive += dur;
+          else if (prevAct === 'WORK') dayWork += dur;
+          else if (prevAct === 'AVAILABILITY') dayPoa += dur;
+          else dayRest += dur;
+        }
 
-      parsedActivities.push({
-        timeStart: `${startH}:${startM}`,
-        timeEnd: `${endH}:${endM}`,
-        durationMinutes: durationMins,
-        activityType,
-        speedKmh: activityType === 'DRIVING' ? 84 : 0
-      });
+        days.push({
+          date: d.toISOString().slice(0, 10),
+          distanceKm,
+          activities: dayActs,
+          driveMinutes: dayDrive,
+          workMinutes: dayWork,
+          restMinutes: dayRest,
+          poaMinutes: dayPoa
+        });
+      }
+    }
 
-      lastMinute = endMin;
-      if (lastMinute >= 1440) break;
+    const activeDays = days.filter((x) => x.driveMinutes > 0 || x.workMinutes > 0);
+    const chosenDay = activeDays.length > 0 ? activeDays[activeDays.length - 1] : days[days.length - 1];
+    if (chosenDay && chosenDay.activities.length > 0) {
+      parsedActivities.push(...chosenDay.activities);
+      if (chosenDay.distanceKm > 0) {
+        odoEndKm = odoStartKm + chosenDay.distanceKm;
+      }
+    }
+
+    // Secondary parsing mode for duration-encoded 16-bit activity words (used in synthetic test buffers)
+    if (parsedActivities.length === 0 && activityEf.data.length >= 6) {
+      let lastMinute = 0;
+      for (let i = 4; i + 2 <= activityEf.data.length; i += 2) {
+        const word = (activityEf.data[i] << 8) | activityEf.data[i + 1];
+        const actTypeBits = (word >> 14) & 0x03;
+        const durationMins = word & 0x0fff;
+
+        if (durationMins <= 0 || durationMins > 1440) continue;
+
+        let activityType: 'DRIVING' | 'WORK' | 'AVAILABILITY' | 'REST' = 'REST';
+        if (actTypeBits === 3) activityType = 'DRIVING';
+        else if (actTypeBits === 2) activityType = 'WORK';
+        else if (actTypeBits === 1) activityType = 'AVAILABILITY';
+        else activityType = 'REST';
+
+        const startMin = lastMinute;
+        const endMin = Math.min(1440, startMin + durationMins);
+
+        const startH = Math.floor(startMin / 60).toString().padStart(2, '0');
+        const startM = (startMin % 60).toString().padStart(2, '0');
+        const endH = Math.floor(endMin / 60).toString().padStart(2, '0');
+        const endM = (endMin % 60).toString().padStart(2, '0');
+
+        parsedActivities.push({
+          timeStart: `${startH}:${startM}`,
+          timeEnd: `${endH}:${endM}`,
+          durationMinutes: durationMins,
+          activityType,
+          speedKmh: activityType === 'DRIVING' ? 84 : 0
+        });
+
+        lastMinute = endMin;
+        if (lastMinute >= 1440) break;
+      }
     }
   }
 
@@ -465,6 +602,13 @@ export function parseRawDddBinary(
     cardMetadata,
     remainingCounters,
     workedHours,
+    hoursSummary: {
+      drivingMinutes: dailyDriveMinutes,
+      workingMinutes: totalWorkMinutes,
+      restMinutes: totalRestMinutes,
+      poaMinutes: totalAvailabilityMinutes,
+      estimatedPayGbp: +(((dailyDriveMinutes + totalWorkMinutes) / 60) * 17.50).toFixed(2)
+    },
     odometerStartKm: odoStartKm,
     odometerEndKm: odoEndKm,
     distanceDrivenKm: Math.max(0, odoEndKm - odoStartKm)
