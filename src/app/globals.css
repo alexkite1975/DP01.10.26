@@ -7,17 +7,76 @@
 }
 
 body {
-  background-color: #060a12;
+  background-color: #040711;
   color: #f8fafc;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ambient Aerospace Cockpit Grid */
+.bg-cockpit-grid {
+  background-image: 
+    radial-gradient(rgba(59, 130, 246, 0.08) 1px, transparent 1px),
+    radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px, 8px 8px;
+  background-position: 0 0, 16px 16px;
+}
+
+/* Glassmorphic Cockpit Panel */
+.cockpit-panel {
+  background: rgba(10, 16, 31, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 0 12px 36px -8px rgba(0, 0, 0, 0.6);
+}
+
+.cockpit-panel-glow {
+  background: rgba(10, 16, 31, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 0 25px -5px rgba(59, 130, 246, 0.2);
+}
+
+/* Tactile Mobile Spring Tap */
+.touch-press {
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease;
+}
+.touch-press:active {
+  transform: scale(0.97);
+}
+
+/* Modern Monospaced Tabular Digits */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Custom Cockpit Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(4, 7, 17, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background: #0d1527 !important;
-  border-radius: 1rem;
+  background: #080e1a !important;
+  border-radius: 1.25rem;
 }

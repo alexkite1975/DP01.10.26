@@ -1,16 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { CockpitBottomDock } from "@/components/navigation/CockpitBottomDock";
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#020617",
+  themeColor: "#040711",
 };
 
 export const metadata: Metadata = {
-  title: "SmartHaul OS",
-  description: "Next-Gen Fleet Management & In-Cab Operations",
+  title: "Drive Partners • UK Freight & Logistics OS",
+  description: "Next-Gen Fleet Management, In-Cab Operations & Direct Haulage Exchange",
 };
 
 export default function RootLayout({
@@ -20,7 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark bg-slate-950 text-slate-100">
-      <body className="min-h-dvh antialiased flex flex-col">{children}</body>
+      <body className="min-h-dvh antialiased flex flex-col bg-cockpit-grid pb-20 sm:pb-16">
+        {children}
+        <CockpitBottomDock />
+      </body>
     </html>
   );
 }

@@ -1,9 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { ArrowLeft, CheckCircle2, ShieldCheck, FileText } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ShieldCheck,
+  FileText,
+  Sliders,
+  Layers,
+  Sparkles
+} from 'lucide-react';
+import { InteractiveTruckBlueprint } from '@/components/vehicleCheck/InteractiveTruckBlueprint';
 
 const VehicleCheckApp = dynamic(() => import('@/components/vehicleCheck/VehicleCheckApp'), {
   ssr: false,
@@ -15,14 +24,27 @@ const VehicleCheckApp = dynamic(() => import('@/components/vehicleCheck/VehicleC
 });
 
 export default function DriverWalkaroundPage() {
+  const [viewMode, setViewMode] = useState<'CHECKLIST' | 'BLUEPRINT'>('CHECKLIST');
+  const [passedBlueprintZones, setPassedBlueprintZones] = useState<string[]>([
+    'zone-cab-front',
+    'zone-suzi-coils',
+    'zone-fifth-wheel'
+  ]);
+
+  const handleToggleZone = (zoneId: string) => {
+    setPassedBlueprintZones((prev) =>
+      prev.includes(zoneId) ? prev.filter((id) => id !== zoneId) : [...prev, zoneId]
+    );
+  };
+
   return (
     <div className="min-h-dvh bg-slate-950 text-white flex flex-col font-sans">
       {/* Mobile Top App Bar */}
-      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-cockpit">
         <div className="flex items-center gap-3">
           <Link
             href="/driver"
-            className="p-2 -ml-1 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white transition flex items-center gap-1 text-xs font-semibold"
+            className="p-2 -ml-1 rounded-xl bg-slate-800/80 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white transition flex items-center gap-1 text-xs font-semibold touch-press"
             aria-label="Return to In-Cab Hub"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -36,18 +58,54 @@ export default function DriverWalkaroundPage() {
           </div>
         </div>
 
-        {/* Clean Relevant Link Only */}
-        <Link
-          href="/driver/inspections/signoff"
-          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shadow-md transition"
-        >
-          <FileText className="w-3.5 h-3.5" /> Sign-Off
-        </Link>
+        {/* View Mode Toggle & Sign-off Link */}
+        <div className="flex items-center gap-2">
+          <div className="bg-slate-950/80 p-0.5 rounded-xl border border-slate-800 flex items-center">
+            <button
+              onClick={() => setViewMode('CHECKLIST')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition ${
+                viewMode === 'CHECKLIST'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              List
+            </button>
+            <button
+              onClick={() => setViewMode('BLUEPRINT')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition ${
+                viewMode === 'BLUEPRINT'
+                  ? 'bg-cyan-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Sparkles className="w-3 h-3 text-amber-300" />
+              <span>44t HUD</span>
+            </button>
+          </div>
+
+          <Link
+            href="/driver/inspections/signoff"
+            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shadow-md transition touch-press"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Sign-Off</span>
+          </Link>
+        </div>
       </header>
 
-      {/* Mobile-Optimized Body (Single-Purpose Tool) */}
-      <main className="flex-1 w-full max-w-2xl mx-auto p-2 sm:p-4 overflow-y-auto">
-        <VehicleCheckApp />
+      {/* Mobile-Optimized Body */}
+      <main className="flex-1 w-full max-w-2xl mx-auto p-2 sm:p-4 overflow-y-auto space-y-4">
+        {viewMode === 'BLUEPRINT' ? (
+          <div className="space-y-4 animate-in fade-in duration-200">
+            <InteractiveTruckBlueprint
+              passedZones={passedBlueprintZones}
+              onTogglePassZone={handleToggleZone}
+            />
+          </div>
+        ) : (
+          <VehicleCheckApp />
+        )}
       </main>
     </div>
   );
