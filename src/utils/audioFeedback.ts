@@ -123,6 +123,10 @@ class AudioFeedbackService {
       // Ignore
     }
   }
+
+  public playWarningAlert() {
+    this.playWarningTone();
+  }
 }
 
 export const audioFeedback = new AudioFeedbackService();
