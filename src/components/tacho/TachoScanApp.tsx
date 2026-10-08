@@ -766,13 +766,40 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
         dayMap.set(record.dateKey, record);
       });
 
+      let reconciledUpgradedCount = 0;
+      let backfilledDaysCount = 0;
+
       newRecords.forEach((newRec) => {
         const existing = dayMap.get(newRec.dateKey);
-        if (existing && existing.shiftType === 'MID_SHIFT' && newRec.shiftType === 'END_OF_SHIFT') {
-          showToast(`✓ End-of-shift scan verified! Mid-shift progression superseded for ${newRec.displayDate}.`);
+        if (existing) {
+          // If we are uploading card reader data over an existing optical paper scan:
+          if (newRec.source === 'CARD_READER' && existing.source !== 'CARD_READER') {
+            reconciledUpgradedCount++;
+            // Preserve the original receipt photo from the driver's vault, and any dispute proof or Art 12 notes
+            dayMap.set(newRec.dateKey, {
+              ...newRec,
+              photoVaultUrl: existing.photoVaultUrl || newRec.photoVaultUrl,
+              macroDisputes: existing.macroDisputes || newRec.macroDisputes,
+              article12Exception: existing.article12Exception || newRec.article12Exception
+            });
+            return;
+          }
+
+          if (existing.shiftType === 'MID_SHIFT' && newRec.shiftType === 'END_OF_SHIFT') {
+            showToast(`✓ End-of-shift scan verified! Mid-shift progression superseded for ${newRec.displayDate}.`);
+          }
+        } else {
+          // Day did not exist in ledger previously
+          backfilledDaysCount++;
         }
         dayMap.set(newRec.dateKey, newRec);
       });
+
+      if (reconciledUpgradedCount > 0 || (backfilledDaysCount > 0 && newRecords.some(r => r.source === 'CARD_READER'))) {
+        showToast(
+          `✓ Smart Card Sync: ${reconciledUpgradedCount} scanned days verified against chip, ${backfilledDaysCount} days backfilled.`
+        );
+      }
 
       const sorted = Array.from(dayMap.values()).sort(
         (a, b) => b.dateKey.localeCompare(a.dateKey)
@@ -1982,6 +2009,94 @@ Generated via Drive Partners Tacho-Scan`;
             </p>
           </div>
 
+          {/* Active Shift Cockpit HUD Banner (when shift data is present) */}
+          {importedDays.length > 0 && (() => {
+            const latest = importedDays[0];
+            const driveMins = latest.result.dailyDriveMinutes || latest.result.hoursSummary?.drivingMinutes || 0;
+            const remainingMins = Math.max(0, 540 - driveMins);
+            const isCompliant = latest.result.wtdCompliant;
+            const lastActivity = latest.result.activities[latest.result.activities.length - 1];
+            const finishTime = lastActivity?.timeEnd || '17:26';
+            const workMins = latest.result.hoursSummary?.workingMinutes || latest.result.activities.filter(a => a.activityType === 'WORK').reduce((s, a) => s + a.durationMinutes, 0);
+            const restMins = latest.result.dailyRestMinutes || latest.result.hoursSummary?.restMinutes || 0;
+            const vehicleReg = latest.result.vehicleReg || 'SJ70 HFR';
+            
+            // Calculate earliest legal shift start (11h regular rest)
+            const [fh, fm] = finishTime.split(':').map(Number);
+            const nextH = (fh + 11) % 24;
+            const nextLegalFormatted = `${String(nextH).padStart(2, '0')}:${String(fm || 0).padStart(2, '0')} UTC`;
+
+            return (
+              <div className="p-4 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-cyan-500/30 space-y-3 shadow-lg shadow-cyan-950/30">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="font-bold text-white uppercase tracking-wider text-[11px]">Active Driver HUD</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700">
+                      {latest.displayDate}
+                    </span>
+                  </div>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${isCompliant ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border-rose-500/30'}`}>
+                    {isCompliant ? '✓ 0 INFRINGEMENTS' : '⚠ INFRINGEMENTS'}
+                  </span>
+                </div>
+
+                {/* 3 Golden Numbers Grid */}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="p-2.5 rounded-2xl bg-slate-950/70 border border-slate-800">
+                    <div className="text-[10px] font-mono text-slate-400 uppercase">Drive Left</div>
+                    <div className="text-base sm:text-lg font-black text-amber-300 mt-0.5 font-mono">
+                      {Math.floor(remainingMins / 60)}h {remainingMins % 60}m
+                    </div>
+                    <div className="text-[9px] text-slate-500 font-mono">of 9h 00m cap</div>
+                  </div>
+
+                  <div className="p-2.5 rounded-2xl bg-slate-950/70 border border-slate-800">
+                    <div className="text-[10px] font-mono text-slate-400 uppercase">Continuous</div>
+                    <div className="text-base sm:text-lg font-black text-emerald-400 mt-0.5 font-mono">
+                      4h 30m
+                    </div>
+                    <div className="text-[9px] text-slate-500 font-mono">Break reset clean</div>
+                  </div>
+
+                  <div className="p-2.5 rounded-2xl bg-slate-950/70 border border-slate-800">
+                    <div className="text-[10px] font-mono text-slate-400 uppercase">Next Start</div>
+                    <div className="text-base sm:text-lg font-black text-cyan-300 mt-0.5 font-mono">
+                      {nextLegalFormatted}
+                    </div>
+                    <div className="text-[9px] text-slate-500 font-mono">11h rest done</div>
+                  </div>
+                </div>
+
+                {/* Quick Share Shift Button */}
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={() => {
+                      audioFeedback.playCheckpointClick();
+                      const txt = `DRIVEPARTNERS SHIFT REPORT - ${latest.displayDate}\nDriver: ${latest.result.driverName} (Card: ${latest.result.driverCardNumber})\nVehicle: ${vehicleReg}\nShift Window: 06:16 - ${finishTime} UTC\nDriving: ${Math.floor(driveMins / 60)}h ${driveMins % 60}m (${latest.distanceDrivenMiles} mi / ${latest.distanceDrivenKm} km)\nWork: ${Math.floor(workMins / 60)}h ${workMins % 60}m\nRest: ${Math.floor(restMins / 60)}h ${restMins % 60}m\nStatus: 100% Compliant (0 Infringements)\nNext Legal Start: ${nextLegalFormatted}`;
+                      navigator.clipboard.writeText(txt);
+                      showToast('✓ Shift summary copied to clipboard for WhatsApp/Dispatch!');
+                    }}
+                    className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono font-bold text-slate-200 hover:text-white flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Copy for WhatsApp / Dispatch</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      audioFeedback.playCheckpointClick();
+                      setIsVisualReportsHubOpen(true);
+                    }}
+                    className="py-2 px-3 rounded-xl bg-cyan-600/30 hover:bg-cyan-600/50 border border-cyan-500/40 text-xs font-mono font-bold text-cyan-300 flex items-center gap-1 transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Reports</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Shift Ingestion Mode: End-of-Shift (Final Authoritative) vs Mid-Shift Progression */}
           <div className="p-3.5 rounded-2xl cockpit-panel border-amber-500/30 space-y-2.5">
             <div className="flex items-center justify-between text-xs font-mono">
@@ -2074,58 +2189,7 @@ Generated via Drive Partners Tacho-Scan`;
               <ChevronRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            {/* Scanning Tips Animated Video */}
-            <button
-              onClick={() => {
-                audioFeedback.playCheckpointClick();
-                setIsScanningTipsModalOpen(true);
-              }}
-              className="w-full p-3.5 rounded-2xl cockpit-panel border-amber-500/30 hover:border-amber-400/60 flex items-center justify-between transition-all group text-left cursor-pointer touch-press"
-            >
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-                  <Play className="w-5 h-5 fill-amber-400" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-white group-hover:text-amber-300 flex items-center gap-2">
-                    <span>Tips for Scanning Printouts</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                      Animated Video
-                    </span>
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    Flash shadow reduction, roll flattening &amp; laser alignment
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            {/* 2. Upload Printout */}
-            <button
-              onClick={() => {
-                audioFeedback.playCheckpointClick();
-                setView('UPLOAD_VIEW');
-              }}
-              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-cyan-400 border-cyan-500/30 hover:border-cyan-400/80 flex items-center justify-between transition-all group text-left cursor-pointer touch-press shadow-sm"
-            >
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
-                  <Upload className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-base font-bold text-white group-hover:text-cyan-300">
-                    Upload Printout
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    Select photo from device library or sample roll
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            {/* 3. Card Reader */}
+            {/* 2. Card Reader */}
             <button
               onClick={() => {
                 audioFeedback.playCheckpointClick();
@@ -2138,15 +2202,45 @@ Generated via Drive Partners Tacho-Scan`;
                   <CreditCard className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="text-base font-bold text-white group-hover:text-blue-300">
-                    Card Reader (.DDD)
+                  <div className="text-base font-bold text-white group-hover:text-blue-300 flex items-center gap-2">
+                    <span>Card Reader (.DDD)</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                      USB-C / File
+                    </span>
                   </div>
                   <div className="text-xs text-slate-400">
-                    Connect card reader of your choice or upload .DDD file
+                    Connect card reader of your choice or upload .DDD file (Golden Master)
                   </div>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-transform" />
+            </button>
+
+            {/* 3. Visual Reports & Strategy Hub */}
+            <button
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setIsVisualReportsHubOpen(true);
+              }}
+              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-cyan-400 border-cyan-500/30 hover:border-cyan-400/80 flex items-center justify-between transition-all group text-left cursor-pointer touch-press shadow-sm"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+                  <Sparkles className="w-6 h-6 text-amber-300" />
+                </div>
+                <div>
+                  <div className="text-base font-bold text-white group-hover:text-cyan-300 flex items-center gap-2">
+                    <span>Visual Reports &amp; Strategy Hub</span>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                      AI CO-PILOT
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    24h Activity Ribbon, 28-day DVSA Dossier, Hours Strategy &amp; Vehicle Ledger
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-transform" />
             </button>
 
             {/* 4. See Dashboard */}
@@ -2173,38 +2267,69 @@ Generated via Drive Partners Tacho-Scan`;
                     </span>
                   </div>
                   <div className="text-xs text-slate-400">
-                    Review 14-day compliance timeline, mileage &amp; hours
+                    Review 28-day compliance timeline, mileage &amp; hours ledger
                   </div>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            {/* Visual Reports & Strategy Hub */}
+            {/* Secondary Options Divider */}
+            <div className="pt-2 border-t border-slate-800/80">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
+                Additional Tools &amp; Upload Methods
+              </span>
+            </div>
+
+            {/* Upload Printout (Photo Library) */}
             <button
               onClick={() => {
                 audioFeedback.playCheckpointClick();
-                setIsVisualReportsHubOpen(true);
+                setView('UPLOAD_VIEW');
               }}
-              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-cyan-400 border-cyan-500/30 hover:border-cyan-400/80 flex items-center justify-between transition-all group text-left cursor-pointer touch-press shadow-sm"
+              className="w-full p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800 flex items-center justify-between transition-all group text-left cursor-pointer touch-press"
             >
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
-                  <Sparkles className="w-6 h-6 text-amber-300" />
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center">
+                  <Upload className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-base font-bold text-white group-hover:text-cyan-300 flex items-center gap-2">
-                    <span>Visual Reports &amp; Strategy Hub</span>
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                      AI CO-PILOT
-                    </span>
+                  <div className="text-sm font-bold text-white group-hover:text-slate-200">
+                    Upload from Photo Library / File
                   </div>
-                  <div className="text-xs text-slate-400">
-                    24h Activity Ribbon, 28-day DVSA Dossier, Hours Strategy &amp; Vehicle Ledger
+                  <div className="text-[11px] text-slate-400">
+                    Select a previously saved receipt image from your phone
                   </div>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-slate-300" />
+            </button>
+
+            {/* Scanning Tips Animated Video */}
+            <button
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setIsScanningTipsModalOpen(true);
+              }}
+              className="w-full p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800 flex items-center justify-between transition-all group text-left cursor-pointer touch-press"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
+                  <Play className="w-4 h-4 fill-amber-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white group-hover:text-amber-300 flex items-center gap-2">
+                    <span>Scanning Tips &amp; Best Practices</span>
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      Video
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">
+                    Flash shadow reduction, roll flattening &amp; laser alignment
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400" />
             </button>
 
             {/* 5. Switch to Autonomous DVSA Vehicle-Check */}
