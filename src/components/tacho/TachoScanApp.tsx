@@ -39,7 +39,12 @@ import {
   FileCheck,
   Lock,
   Truck,
-  Navigation
+  Navigation,
+  Volume2,
+  VolumeX,
+  HeartPulse,
+  QrCode,
+  MessageSquare
 } from 'lucide-react';
 import {
   TachographScanResult,
@@ -54,6 +59,11 @@ import {
   formatMinutesToHours
 } from '../../services/dddParserService';
 import { audioFeedback } from '../../utils/audioFeedback';
+import {
+  generateSmartDebrief,
+  PRESET_ARTICLE_12_TEMPLATES,
+  SmartDebriefReport
+} from '../../services/tachoDebriefService';
 
 // Storage key for the 14-day imported tachograph history
 const STORAGE_KEY_TACHO_DAYS = 'dp_tacho_imported_days_v1';
@@ -280,6 +290,46 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
     'Severe multi-vehicle collision on M6 forced full carriageway closure. Trapped in live traffic with no exit available. Diverted at slow speed to nearest designated safe truck parking at Sandbach Services.'
   );
   const [art12Signature, setArt12Signature] = useState(driverLicenceProfile?.fullName || 'Alexander James');
+  const [selectedArt12TemplateId, setSelectedArt12TemplateId] = useState<string>('M6_J18_CLOSURE');
+
+  // AI Smart Debrief & Circadian states
+  const [isSmartDebriefOpen, setIsSmartDebriefOpen] = useState(false);
+  const [isSpeakingDebrief, setIsSpeakingDebrief] = useState(false);
+  const [isCircadianModalOpen, setIsCircadianModalOpen] = useState(false);
+  const [isOfficerPassOpen, setIsOfficerPassOpen] = useState(false);
+
+  const handleToggleDebriefSpeech = (script: string) => {
+    if (typeof window === 'undefined') return;
+    if (isSpeakingDebrief) {
+      window.speechSynthesis?.cancel();
+      setIsSpeakingDebrief(false);
+      return;
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(script);
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      utterance.onend = () => setIsSpeakingDebrief(false);
+      utterance.onerror = () => setIsSpeakingDebrief(false);
+      setIsSpeakingDebrief(true);
+      window.speechSynthesis.speak(utterance);
+    } else {
+      showToast('Audio playback not supported on this browser.');
+    }
+  };
+
+  const handleSelectArt12Template = (templateId: string) => {
+    setSelectedArt12TemplateId(templateId);
+    const tmpl = PRESET_ARTICLE_12_TEMPLATES.find((t) => t.id === templateId);
+    if (tmpl) {
+      setArt12Reason(tmpl.category);
+      setArt12Location(tmpl.location);
+      setArt12MinutesOver(tmpl.defaultMinutesOver);
+      setArt12Narrative(tmpl.narrative);
+      audioFeedback.playCheckpointClick();
+    }
+  };
 
   // Toast feedback
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -1036,8 +1086,8 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
       driverSignature: art12Signature
     };
 
-    setImportedDays((prev) =>
-      prev.map((day) => {
+    setImportedDays((prev) => {
+      const updated = prev.map((day) => {
         if (day.dateKey !== art12SelectedDateKey) return day;
         return {
           ...day,
@@ -1047,9 +1097,15 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
             wtdCompliant: true // Legally justified under Art 12
           }
         };
-      })
-    );
+      });
+      try {
+        localStorage.setItem(STORAGE_KEY_TACHO_DAYS, JSON.stringify(updated));
+      } catch (_e) {}
+      return updated;
+    });
 
+    audioFeedback.playSuccessChime();
+    confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 } });
     setIsArt12ModalOpen(false);
     showToast(`Article 12 Emergency Exception signed for ${art12SelectedDateKey}! Roadside defense attached.`);
   };
@@ -2060,8 +2116,47 @@ Generated via Drive Partners Tacho-Scan`;
             {/* Quick Action Tools Bar */}
             <div className="flex flex-wrap items-center gap-2">
               <button
-                onClick={() => setIsDvsaDossierOpen(true)}
-                className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsSmartDebriefOpen(true);
+                }}
+                className="px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-600/25 transition-all cursor-pointer touch-press"
+                title="Open AI Smart Debrief & Plain-English Coaching"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>AI Smart Debrief</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsCircadianModalOpen(true);
+                }}
+                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-rose-300 font-bold text-xs border border-rose-500/30 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
+                title="Circadian Rhythm & Fatigue Index"
+              >
+                <HeartPulse className="w-3.5 h-3.5 text-rose-400" />
+                <span>Fatigue Index</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsOfficerPassOpen(true);
+                }}
+                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-emerald-300 font-bold text-xs border border-emerald-500/30 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
+                title="Instant Officer Roadside Pass"
+              >
+                <QrCode className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Roadside Pass</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsDvsaDossierOpen(true);
+                }}
+                className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer touch-press"
                 title="Open 1-Tap DVSA Roadside Inspection Dossier"
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
@@ -2070,10 +2165,11 @@ Generated via Drive Partners Tacho-Scan`;
 
               <button
                 onClick={() => {
+                  audioFeedback.playCheckpointClick();
                   setArt12SelectedDateKey(importedDays[0]?.dateKey || '');
                   setIsArt12ModalOpen(true);
                 }}
-                className="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-bold text-xs border border-amber-500/30 flex items-center gap-1.5 transition-all cursor-pointer"
+                className="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-bold text-xs border border-amber-500/30 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
                 title="Log EU 561/2006 Article 12 Emergency Concession"
               >
                 <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
@@ -2081,8 +2177,11 @@ Generated via Drive Partners Tacho-Scan`;
               </button>
 
               <button
-                onClick={() => setIsTimesheetModalOpen(true)}
-                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-cyan-300 font-bold text-xs border border-cyan-500/30 flex items-center gap-1.5 transition-all cursor-pointer"
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsTimesheetModalOpen(true);
+                }}
+                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-cyan-300 font-bold text-xs border border-cyan-500/30 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
                 title="Weekly Worked Hours & Payroll Summary"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-cyan-400" />
@@ -2090,8 +2189,11 @@ Generated via Drive Partners Tacho-Scan`;
               </button>
 
               <button
-                onClick={() => setIsVaultModalOpen(true)}
-                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-slate-300 font-bold text-xs border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsVaultModalOpen(true);
+                }}
+                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-slate-300 font-bold text-xs border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
                 title="Faded Thermal Paper Digital Photo Vault"
               >
                 <Camera className="w-3.5 h-3.5" />
@@ -2099,8 +2201,11 @@ Generated via Drive Partners Tacho-Scan`;
               </button>
 
               <button
-                onClick={() => handleExportDddFile()}
-                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-slate-300 font-bold text-xs border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  handleExportDddFile();
+                }}
+                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-slate-300 font-bold text-xs border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
                 title="Download raw .DDD cryptographic file"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -2137,6 +2242,96 @@ Generated via Drive Partners Tacho-Scan`;
               </button>
             </div>
           </div>
+
+          {/* AI Smart Debrief & Circadian Coach Banner (When data exists) */}
+          {importedDays.length > 0 && (() => {
+            const debrief = generateSmartDebrief(importedDays, driverLicenceProfile?.fullName || 'Alexander James');
+            return (
+              <div className="p-4 sm:p-5 rounded-3xl cockpit-panel border-t-2 border-t-purple-400 border-purple-500/30 space-y-3 shadow-cockpit">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold shadow-sm">
+                      <Sparkles className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+                          <span>AI Smart Debrief &amp; Coaching</span>
+                        </h3>
+                        <span
+                          className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                            debrief.overallStatus === 'ALL_CLEAR'
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                              : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                          }`}
+                        >
+                          {debrief.overallStatus === 'ALL_CLEAR' ? '✓ 100% CLEAN' : '⚠ ADVISORY'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 mt-0.5">{debrief.headline}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleToggleDebriefSpeech(debrief.voiceScript)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer touch-press ${
+                        isSpeakingDebrief
+                          ? 'bg-purple-600 text-white animate-pulse shadow-md shadow-purple-600/30'
+                          : 'bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-500/30'
+                      }`}
+                      title="Listen to conversational debrief through cab speakers"
+                    >
+                      {isSpeakingDebrief ? (
+                        <VolumeX className="w-3.5 h-3.5" />
+                      ) : (
+                        <Volume2 className="w-3.5 h-3.5 text-purple-400" />
+                      )}
+                      <span>{isSpeakingDebrief ? 'Stop Audio' : 'Listen In-Cab'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setIsSmartDebriefOpen(true);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/40 text-xs font-mono font-bold flex items-center gap-1 cursor-pointer touch-press"
+                    >
+                      <span>Full Advice</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Circadian Mini-Ticker */}
+                <div className="pt-2 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
+                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+                    <span className="text-slate-400 text-[10px]">CIRCADIAN FATIGUE</span>
+                    <span className="flex items-center gap-1 font-bold text-amber-300">
+                      <HeartPulse className="w-3.5 h-3.5 text-rose-400" />
+                      {debrief.fatigueAnalysis.score}% ({debrief.fatigueAnalysis.level})
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+                    <span className="text-slate-400 text-[10px]">DANGER WINDOW</span>
+                    <span className="text-cyan-300 font-bold">{debrief.fatigueAnalysis.dangerWindow}</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+                    <span className="text-slate-400 text-[10px]">RECOVERY ACTION</span>
+                    <button
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setIsCircadianModalOpen(true);
+                      }}
+                      className="text-emerald-400 hover:underline font-bold text-[11px]"
+                    >
+                      View Sleep Plan ➔
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* List of Days (Up to 14 Days) */}
           {importedDays.length === 0 ? (
@@ -2628,6 +2823,34 @@ Generated via Drive Partners Tacho-Scan`;
             </p>
 
             <div className="space-y-3 text-xs">
+              {/* 1-Tap Preset Templates */}
+              <div className="space-y-1.5 p-3 rounded-2xl bg-slate-900 border border-slate-800">
+                <label className="font-bold text-amber-300 block text-[11px] font-mono flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>1-Tap Statutory Preset Templates (EC 561/2006 Art. 12):</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {PRESET_ARTICLE_12_TEMPLATES.map((tmpl) => (
+                    <button
+                      key={tmpl.id}
+                      type="button"
+                      onClick={() => handleSelectArt12Template(tmpl.id)}
+                      className={`p-2.5 rounded-xl text-left border text-xs transition-all cursor-pointer ${
+                        selectedArt12TemplateId === tmpl.id
+                          ? 'bg-amber-500/20 border-amber-400 text-white font-bold shadow-sm'
+                          : 'bg-slate-950/80 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="text-[11px] font-bold text-amber-300 flex items-center justify-between">
+                        <span>{tmpl.label}</span>
+                        {selectedArt12TemplateId === tmpl.id && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                      </div>
+                      <div className="text-[10px] text-slate-400 truncate mt-0.5">{tmpl.location}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label className="font-bold text-slate-300 block mb-1">Affected Date:</label>
                 <select
@@ -3434,6 +3657,333 @@ Generated via Drive Partners Tacho-Scan`;
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ========================================================================= */}
+      {/* 17. AI SMART DEBRIEF & PLAIN-ENGLISH COACHING MODAL                       */}
+      {/* ========================================================================= */}
+      {isSmartDebriefOpen && (() => {
+        const debrief = generateSmartDebrief(importedDays, driverLicenceProfile?.fullName || 'Alexander James');
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200">
+            <div className="relative w-full max-w-2xl rounded-3xl bg-slate-950 border border-purple-500/50 text-white shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold">
+                    <Sparkles className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-white flex items-center gap-2">
+                      <span>AI Smart Debrief &amp; Coach</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                        Plain-English EU 561/2006
+                      </span>
+                    </h4>
+                    <p className="text-xs text-slate-400">
+                      Constructive, supportive guidance tailored to your specific driving pattern
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (isSpeakingDebrief && typeof window !== 'undefined') {
+                      window.speechSynthesis?.cancel();
+                      setIsSpeakingDebrief(false);
+                    }
+                    setIsSmartDebriefOpen(false);
+                  }}
+                  className="p-1 text-slate-400 hover:text-white cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Conversational Headline & Voice Playback */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/60 to-slate-900 border border-purple-500/30 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-xs font-mono font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <MessageSquare className="w-4 h-4 text-purple-400" /> In-Cab Driver Coach
+                  </span>
+                  <button
+                    onClick={() => handleToggleDebriefSpeech(debrief.voiceScript)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      isSpeakingDebrief
+                        ? 'bg-purple-600 text-white animate-pulse shadow-md shadow-purple-600/30'
+                        : 'bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-500/30'
+                    }`}
+                  >
+                    {isSpeakingDebrief ? (
+                      <VolumeX className="w-3.5 h-3.5" />
+                    ) : (
+                      <Volume2 className="w-3.5 h-3.5 text-purple-400" />
+                    )}
+                    <span>{isSpeakingDebrief ? 'Stop Voice' : 'Play Voice Coaching'}</span>
+                  </button>
+                </div>
+                <p className="text-sm font-medium text-white leading-relaxed">{debrief.headline}</p>
+                <p className="text-xs text-slate-300 italic">"{debrief.voiceScript}"</p>
+              </div>
+
+              {/* Shift Metrics Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-mono">
+                <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">TOTAL MILES</span>
+                  <strong className="text-amber-400 text-base">{debrief.totalMilesDriven} mi</strong>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">DRIVE TIME</span>
+                  <strong className="text-cyan-400 text-base">{debrief.totalDriveHours}h</strong>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">REST LOGGED</span>
+                  <strong className="text-emerald-400 text-base">{debrief.totalRestHours}h</strong>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">FATIGUE INDEX</span>
+                  <strong className="text-rose-400 text-base">{debrief.fatigueAnalysis.score}%</strong>
+                </div>
+              </div>
+
+              {/* Coaching Points (Plain English Breakdown) */}
+              <div className="space-y-2.5">
+                <span className="text-xs font-mono font-bold text-slate-400 block uppercase">
+                  Tailored Coaching Insights:
+                </span>
+                <div className="space-y-2">
+                  {debrief.coachingPoints.map((pt, i) => (
+                    <div
+                      key={i}
+                      className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          {pt.title}
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-400">{pt.regulation}</span>
+                      </div>
+                      <p className="text-xs text-slate-300">{pt.description}</p>
+                      <div className="p-2 rounded-xl bg-purple-950/40 border border-purple-500/20 text-[11px] text-purple-200 font-mono">
+                        💡 <strong>Pro Tip:</strong> {pt.actionableTip}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tomorrow's Shift Action Plan */}
+              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+                <span className="font-bold text-white block font-mono text-[11px] uppercase tracking-wider">
+                  Recommended Action Plan for Tomorrow:
+                </span>
+                <ul className="space-y-1.5 text-slate-300">
+                  {debrief.tomorrowActionPlan.map((action, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="text-amber-400 font-bold font-mono">#{idx + 1}</span>
+                      <span>{action}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsSmartDebriefOpen(false);
+                }}
+                className="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
+              >
+                Close Debrief
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ========================================================================= */}
+      {/* 18. CIRCADIAN RHYTHM & FATIGUE INDEX MODAL                                */}
+      {/* ========================================================================= */}
+      {isCircadianModalOpen && (() => {
+        const debrief = generateSmartDebrief(importedDays, driverLicenceProfile?.fullName || 'Alexander James');
+        const { fatigueAnalysis } = debrief;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200">
+            <div className="relative w-full max-w-lg rounded-3xl bg-slate-950 border border-rose-500/40 text-white shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center justify-center font-bold">
+                    <HeartPulse className="w-5 h-5 text-rose-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-white">Circadian Fatigue &amp; Sleep Recovery</h4>
+                    <p className="text-xs text-slate-400">Biological alertness modeling based on shift transitions</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsCircadianModalOpen(false)}
+                  className="p-1 text-slate-400 hover:text-white cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Fatigue Score Meter */}
+              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-2">
+                <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                  Current Fatigue Risk Score
+                </div>
+                <div className="text-4xl font-black text-rose-400 font-mono">
+                  {fatigueAnalysis.score}%
+                </div>
+                <div className="inline-block px-3 py-1 rounded-full text-xs font-mono font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                  Risk Level: {fatigueAnalysis.level}
+                </div>
+                <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-3">
+                  <div
+                    className={`h-full transition-all duration-500 ${
+                      fatigueAnalysis.score > 60
+                        ? 'bg-rose-500'
+                        : fatigueAnalysis.score > 35
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                    }`}
+                    style={{ width: `${fatigueAnalysis.score}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Danger Window & Sleep Debt */}
+              <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+                <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">CIRCADIAN LOW WINDOW</span>
+                  <strong className="text-cyan-300 text-sm mt-1 block">{fatigueAnalysis.dangerWindow}</strong>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
+                  <span className="text-slate-400 block text-[10px]">ESTIMATED SLEEP DEBT</span>
+                  <strong className="text-amber-300 text-sm mt-1 block">+{fatigueAnalysis.sleepDebtHours} hrs</strong>
+                </div>
+              </div>
+
+              {/* Actionable Recovery Advice */}
+              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+                <span className="font-bold text-white block font-mono text-[11px] uppercase">
+                  Proactive Rest &amp; Alertness Strategy:
+                </span>
+                <p className="text-slate-300 leading-relaxed">{fatigueAnalysis.recommendedAction}</p>
+                <div className="pt-2 text-[11px] font-mono text-slate-400 space-y-1">
+                  <div>☕ <strong>Caffeine cut-off:</strong> Stop coffee/tea 4 hours prior to daily rest.</div>
+                  <div>🌡️ <strong>Cab temperature:</strong> Maintain 19&deg;C - 21&deg;C to prevent lethargy.</div>
+                  <div>💤 <strong>Power nap:</strong> Max 20 mins during statutory 45m break.</div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsCircadianModalOpen(false);
+                }}
+                className="w-full py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition-all cursor-pointer"
+              >
+                Close Fatigue Analysis
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ========================================================================= */}
+      {/* 19. 1-TAP DVSA OFFICER ROADSIDE QUICK-PASS                                */}
+      {/* ========================================================================= */}
+      {isOfficerPassOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-3xl bg-slate-950 border-2 border-emerald-500 text-white shadow-2xl p-6 sm:p-7 space-y-5">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-6 h-6 text-emerald-400" />
+                <h4 className="text-base font-black text-white uppercase tracking-wider font-mono">
+                  DVSA Roadside Quick-Pass
+                </h4>
+              </div>
+              <button
+                onClick={() => setIsOfficerPassOpen(false)}
+                className="p-1 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300 text-center font-mono">
+              Show this screen to Police Traffic or DVSA Enforcement Officer during roadside stop
+            </p>
+
+            {/* High-Contrast Officer Display Card */}
+            <div className="p-4 rounded-2xl bg-white text-slate-950 space-y-3 shadow-inner">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                <div>
+                  <span className="text-[10px] font-mono uppercase text-slate-500 font-bold block">DRIVER</span>
+                  <strong className="text-base font-black text-slate-900">
+                    {driverLicenceProfile?.fullName || 'Alexander James'}
+                  </strong>
+                </div>
+                <span className="px-2.5 py-1 rounded bg-emerald-600 text-white font-mono text-[10px] font-black">
+                  ✓ VERIFIED
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                <div>
+                  <span className="text-[10px] text-slate-500 block">CARD NO:</span>
+                  <strong>{driverLicenceProfile?.tachoCardNumber || 'UK-9021482019'}</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 block">VEHICLE REG:</span>
+                  <strong>GN21 XRO</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 block">RECORDS HELD:</span>
+                  <strong>{importedDays.length} Days</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 block">STATUS:</span>
+                  <strong className="text-emerald-700">100% COMPLIANT</strong>
+                </div>
+              </div>
+
+              {/* QR Code Placeholder for Examiner's Tablet */}
+              <div className="pt-2 border-t border-slate-200 text-center space-y-1">
+                <div className="w-28 h-28 mx-auto bg-slate-950 rounded-xl p-2 flex items-center justify-center">
+                  <QrCode className="w-24 h-24 text-white" />
+                </div>
+                <div className="text-[10px] font-mono text-slate-500">
+                  Scan for Cryptographic Audit Trail (Annex 1C Verified)
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsOfficerPassOpen(false);
+                  setIsDvsaDossierOpen(true);
+                }}
+                className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Show Detailed Itemized Dossier</span>
+              </button>
+              <button
+                onClick={() => setIsOfficerPassOpen(false)}
+                className="w-full py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs border border-slate-800 transition-all cursor-pointer"
+              >
+                Done
+              </button>
             </div>
           </div>
         </div>
