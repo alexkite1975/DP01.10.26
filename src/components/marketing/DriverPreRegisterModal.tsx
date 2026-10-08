@@ -201,16 +201,18 @@ export const DriverPreRegisterModal: React.FC<DriverPreRegisterModalProps> = ({
 
                 <div className="space-y-1">
                   <label className="text-[11px] font-mono text-slate-300 block">
-                    Your Tachograph Make
+                    Hardware / Ingest Method
                   </label>
                   <select
                     value={tachoManufacturer}
                     onChange={(e) => setTachoManufacturer(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
                   >
+                    <option>Smart Card Reader (Any Brand - USB / Bluetooth)</option>
                     <option>Stoneridge SE5000 (Smart Gen 2)</option>
                     <option>Continental VDO DTCO 4.1</option>
                     <option>Actia / SmarTach</option>
+                    <option>Both Thermal Rolls &amp; Card Reader</option>
                     <option>Mixed Fleet / Not Sure</option>
                   </select>
                 </div>

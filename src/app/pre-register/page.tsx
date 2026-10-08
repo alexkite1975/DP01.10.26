@@ -141,7 +141,7 @@ export default function PreRegisterPage() {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-400 leading-relaxed font-sans">
-            Snap your end-of-shift thermal printouts in seconds. Automated 28-day statutory DVSA compliance, Article 12 defense generation, and zero calculator guesswork.
+            Snap your end-of-shift thermal printouts or download your driver card using any card reader of your choice. Automated 28-day statutory DVSA compliance, Article 12 defense generation, and zero calculator guesswork.
           </p>
         </div>
 
@@ -149,7 +149,7 @@ export default function PreRegisterPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs font-mono">
             <span className="text-white font-bold flex items-center gap-2">
-              <Play className="w-4 h-4 text-cyan-400" /> Watch the 40-Second Feature Tour:
+              <Play className="w-4 h-4 text-cyan-400" /> Watch the 40-Second Feature Tour (with British Voiceover):
             </span>
             <span className="text-cyan-400">00:40 Runtime</span>
           </div>
@@ -242,16 +242,18 @@ export default function PreRegisterPage() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-mono text-slate-300 block">
-                    Current Tachograph Model
+                    Preferred Ingest Method / Hardware
                   </label>
                   <select
                     value={tachoManufacturer}
                     onChange={(e) => setTachoManufacturer(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
                   >
+                    <option>Smart Card Reader (Any Brand - USB / Bluetooth)</option>
                     <option>Stoneridge SE5000 (Smart Gen 2)</option>
                     <option>Continental VDO DTCO 4.1</option>
                     <option>Actia / SmarTach</option>
+                    <option>Both Thermal Rolls &amp; Card Reader</option>
                     <option>Mixed Fleet / Not Sure</option>
                   </select>
                 </div>

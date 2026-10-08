@@ -23,7 +23,8 @@ import {
   Search,
   Check,
   X,
-  Play
+  Play,
+  CreditCard
 } from 'lucide-react';
 import { TachoScanMarketingVideo } from '@/components/marketing/TachoScanMarketingVideo';
 import { DriverPreRegisterModal } from '@/components/marketing/DriverPreRegisterModal';
@@ -192,39 +193,50 @@ export default function ComingSoonPage() {
       </header>
 
       {/* Main Hero & Spotlight */}
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-8 py-10 sm:py-16 space-y-12">
-        {/* Launch Status Banner */}
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-8 py-8 sm:py-12 space-y-10">
+        {/* Launch Status Banner & Hero Header */}
+        <div className="text-center space-y-3 max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-bold">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
             <span>NOW OPEN • DRIVER BETA PRE-REGISTRATION</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-            The Operating System for British Haulage &amp; Compliance
+            Tacho-Scan AI for Commercial Drivers
           </h1>
 
           <p className="text-sm sm:text-base text-slate-400 leading-relaxed font-sans">
-            DrivePartners is modernizing commercial transport with unified in-cab AI, direct haulier freight exchange, and automated statutory compliance.
+            Scan your thermal printout roll or download your driver card using any card reader of your choice. Automated 28-day DVSA compliance matrix and in-cab Article 12 defense slips.
           </p>
+        </div>
 
-          {/* Exclusive Driver Pre-Registration CTA */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={() => setIsDriverPreRegisterOpen(true)}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-xs sm:text-sm font-mono flex items-center justify-center gap-2 shadow-glow-blue transition transform hover:scale-105 cursor-pointer"
-            >
-              <Truck className="w-4 h-4 text-slate-950" />
-              <span>Pre-Register as a Driver (Tacho-Scan Beta)</span>
-              <ArrowRight className="w-4 h-4 text-slate-950" />
-            </button>
-            <Link
-              href="/pre-register"
-              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline underline-offset-4"
-            >
-              Direct Pre-Register Link ➔
-            </Link>
+        {/* 🎬 40-SECOND FEATURE VIDEO AT THE TOP OF THE PAGE */}
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between text-xs font-mono px-1">
+            <span className="text-white font-bold flex items-center gap-2">
+              <Play className="w-4 h-4 text-cyan-400 fill-cyan-400" /> 40-Second Feature Video (with British Voiceover)
+            </span>
+            <span className="text-cyan-400 hidden sm:inline">00:40 Runtime • Interactive In-Cab Demonstration</span>
           </div>
+          <TachoScanMarketingVideo onPreRegisterClick={() => setIsDriverPreRegisterOpen(true)} />
+        </div>
+
+        {/* Exclusive Driver Pre-Registration CTA */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button
+            onClick={() => setIsDriverPreRegisterOpen(true)}
+            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-xs sm:text-sm font-mono flex items-center justify-center gap-2 shadow-glow-blue transition transform hover:scale-105 cursor-pointer touch-press"
+          >
+            <Truck className="w-4 h-4 text-slate-950" />
+            <span>Pre-Register as a Driver (Tacho-Scan Beta)</span>
+            <ArrowRight className="w-4 h-4 text-slate-950" />
+          </button>
+          <Link
+            href="/pre-register"
+            className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline underline-offset-4"
+          >
+            Direct Pre-Register Link ➔
+          </Link>
         </div>
 
         {/* Featured Spotlight Card: Tacho-Scan AI */}
@@ -236,7 +248,7 @@ export default function ComingSoonPage() {
                   Flagship Feature
                 </span>
                 <span className="text-xs font-mono text-cyan-400 font-bold">
-                  Module 4 • In-Cab AI Suite
+                  In-Cab AI Driver Suite
                 </span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5">
@@ -246,7 +258,7 @@ export default function ComingSoonPage() {
                 </span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 font-sans">
-                Instant digital tachograph thermal printout OCR, 28-day statutory audit matrix, and automated DVSA defense generator.
+                Universal thermal roll OCR, card download with any reader of choice, 28-day statutory audit matrix, and automated DVSA defense generator.
               </p>
             </div>
 
@@ -260,17 +272,6 @@ export default function ComingSoonPage() {
                 <div className="text-emerald-400 font-black text-sm">28 Days DVSA</div>
               </div>
             </div>
-          </div>
-
-          {/* 40-Second Interactive Marketing Video Tour */}
-          <div className="space-y-2.5 pt-2">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-white font-bold flex items-center gap-2">
-                <Play className="w-4 h-4 text-cyan-400" /> Watch the 40-Second Feature Video:
-              </span>
-              <span className="text-cyan-400">00:40 Runtime • Interactive In-Cab Demo</span>
-            </div>
-            <TachoScanMarketingVideo onPreRegisterClick={() => setIsDriverPreRegisterOpen(true)} />
           </div>
 
           {/* Key Pillars of Tacho-Scan AI */}
@@ -288,7 +289,20 @@ export default function ComingSoonPage() {
               </p>
             </div>
 
-            {/* 2. Statutory 28-Day Matrix */}
+            {/* 2. Download Card with Any Card Reader of Your Choice */}
+            <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-2">
+              <div className="flex items-center gap-2.5 text-cyan-300">
+                <CreditCard className="w-5 h-5 text-cyan-400" />
+                <h3 className="font-bold text-white text-sm font-mono">
+                  Download Card (Card Reader of Choice)
+                </h3>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Download your driver card using any standard card reader of your choice (USB-C, Lightning, or Bluetooth). No expensive proprietary hardware lock-in—simply plug in your preferred smart card reader to extract cryptographic statutory .DDD files and card activity in seconds.
+              </p>
+            </div>
+
+            {/* 3. Statutory 28-Day Matrix */}
             <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-2">
               <div className="flex items-center gap-2.5 text-emerald-400">
                 <Calendar className="w-5 h-5" />
@@ -301,7 +315,7 @@ export default function ComingSoonPage() {
               </p>
             </div>
 
-            {/* 3. Article 12 Defense Generator */}
+            {/* 4. Article 12 Defense Generator */}
             <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-2">
               <div className="flex items-center gap-2.5 text-amber-400">
                 <FileText className="w-5 h-5" />
@@ -313,77 +327,30 @@ export default function ComingSoonPage() {
                 One-tap roadside concession generator with pre-formatted statutory narratives for unexpected traffic gridlock, ferry delays, or lack of safe parking, signed digitally in-cab before officer inspection.
               </p>
             </div>
-
-            {/* 4. Optical Macro Dispute Proof */}
-            <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-2">
-              <div className="flex items-center gap-2.5 text-purple-400">
-                <Search className="w-5 h-5" />
-                <h3 className="font-bold text-white text-sm font-mono">
-                  Macro Optical Dispute Verification
-                </h3>
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                DVSA rules strictly prohibit arbitrary manual overrides. Contesting any misread odometer or activity line requires a high-resolution optical macro photo of the thermal paper, permanently verifying data integrity.
-              </p>
-            </div>
           </div>
 
-          {/* Timezone Switcher & Cab Clock highlight */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-slate-950 border border-cyan-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-cyan-400" />
-              <span className="text-white font-bold">Dual UTC ⇄ BST Local Cab Clock:</span>
-              <span className="text-slate-400">
-                Instant translation between tachograph legal UTC standard and local dashboard cab time.
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px]">🕒 UTC</span>
-              <span className="text-slate-500">⇄</span>
-              <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px] border border-cyan-500/40 font-bold">
-                🇬🇧 BST (+1h)
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Other Modules Teaser */}
-        <div className="space-y-4">
-          <div className="text-center space-y-1">
-            <h3 className="text-lg font-black text-white font-mono uppercase tracking-wider">
-              Also Launching in SmartHaul OS
-            </h3>
-            <p className="text-xs text-slate-400">
-              A comprehensive suite designed from the ground up for UK transport operations
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
-            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-              <div className="text-rose-400 font-bold flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4" /> Driver Safety Shield
+          {/* 3-Step Workflow Summary: Scan, Upload, View */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-cyan-950/30 to-slate-900 border border-cyan-500/30 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+            <div className="flex items-center gap-2.5">
+              <span className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-400 font-black flex items-center justify-center shrink-0 border border-cyan-500/30">1</span>
+              <div>
+                <span className="text-white font-bold block">1. SCAN</span>
+                <span className="text-[11px] text-slate-400">Point phone camera at thermal paper roll</span>
               </div>
-              <p className="text-slate-400 font-sans text-[11px]">
-                4.65m low-bridge radar alerts, snapshot SNAP meal expense tracking, and £45/hr automated GPS demurrage delay claim generator.
-              </p>
             </div>
-
-            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-              <div className="text-emerald-400 font-bold flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" /> Walkaround Check 2.0
+            <div className="flex items-center gap-2.5">
+              <span className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 font-black flex items-center justify-center shrink-0 border border-indigo-500/30">2</span>
+              <div>
+                <span className="text-white font-bold block">2. UPLOAD</span>
+                <span className="text-[11px] text-slate-400">Scan upload or any card reader of your choice</span>
               </div>
-              <p className="text-slate-400 font-sans text-[11px]">
-                18-point DVSA photographic defect inspection, electronic driver signoff, and direct fleet workshop defect dispatch.
-              </p>
             </div>
-
-            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-              <div className="text-blue-400 font-bold flex items-center gap-1.5">
-                <Truck className="w-4 h-4" /> Haulier Fleet Command
+            <div className="flex items-center gap-2.5">
+              <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-black flex items-center justify-center shrink-0 border border-emerald-500/30">3</span>
+              <div>
+                <span className="text-white font-bold block">3. VIEW</span>
+                <span className="text-[11px] text-slate-400">Instant shift metrics &amp; 28-day DVSA ledger</span>
               </div>
-              <p className="text-slate-400 font-sans text-[11px]">
-                1Hz live vehicle telematics, VOR lockouts, driver timesheet verification, and direct haulage exchange matching.
-              </p>
             </div>
           </div>
         </div>
