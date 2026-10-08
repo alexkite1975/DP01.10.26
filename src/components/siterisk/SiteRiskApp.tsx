@@ -515,7 +515,7 @@ export const SiteRiskApp: React.FC<SiteRiskAppProps> = ({
         const newOverall = Number(
           (
             (s.motorwayServicesData.overallRating * s.motorwayServicesData.reviewCount +
-              review.overallScore) /
+              (review.overallScore ?? review.overallRating ?? 5)) /
             newCount
           ).toFixed(1)
         );
