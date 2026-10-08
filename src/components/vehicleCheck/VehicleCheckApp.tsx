@@ -84,8 +84,8 @@ import { formatHeightBoth } from '../../utils/heightUtils';
 
 const STORAGE_KEY_WALKAROUNDS = 'dp_walkaround_records_v1';
 
-interface VehicleCheckAppProps {
-  onOpenLicenceScanner: () => void;
+export interface VehicleCheckAppProps {
+  onOpenLicenceScanner?: () => void;
   driverLicenceProfile?: DriverLicenceProfile | null;
   onSwitchToTachoScan?: () => void;
   onSwitchToSiteRisk?: () => void;
@@ -94,7 +94,7 @@ interface VehicleCheckAppProps {
 }
 
 export const VehicleCheckApp: React.FC<VehicleCheckAppProps> = ({
-  onOpenLicenceScanner,
+  onOpenLicenceScanner = () => {},
   driverLicenceProfile,
   onSwitchToTachoScan,
   onSwitchToSiteRisk,

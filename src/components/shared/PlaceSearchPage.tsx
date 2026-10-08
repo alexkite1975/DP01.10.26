@@ -408,7 +408,7 @@ export const PlaceSearchPage: React.FC<PlaceSearchPageProps> = ({
 
         siteMarker.addListener('click', () => {
           siteInfoWindow.open(mapInstanceRef.current, siteMarker);
-          onSelectSite(site);
+          onSelectSite?.(site);
         });
 
         markersRef.current.push(siteMarker);
@@ -994,7 +994,7 @@ export const PlaceSearchPage: React.FC<PlaceSearchPageProps> = ({
                   <div className="space-y-2 pt-1">
                     <button
                       type="button"
-                      onClick={() => onSelectSite(existingSiteMatch)}
+                      onClick={() => onSelectSite?.(existingSiteMatch)}
                       className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-600/20 transition-all"
                     >
                       <ShieldCheck className="h-4 w-4" />
@@ -1034,7 +1034,7 @@ export const PlaceSearchPage: React.FC<PlaceSearchPageProps> = ({
                     <button
                       type="button"
                       onClick={() =>
-                        onGenerateRiskAssessmentForPlace({
+                        onGenerateRiskAssessmentForPlace?.({
                           title: selectedPlace.name,
                           address: selectedPlace.formattedAddress,
                           lat: selectedPlace.lat,
@@ -1051,7 +1051,7 @@ export const PlaceSearchPage: React.FC<PlaceSearchPageProps> = ({
                     <button
                       type="button"
                       onClick={() =>
-                        onGenerateRiskAssessmentForPlace({
+                        onGenerateRiskAssessmentForPlace?.({
                           title: selectedPlace.name,
                           address: selectedPlace.formattedAddress,
                           lat: selectedPlace.lat,

@@ -100,8 +100,8 @@ export interface TachographDayRecord {
   aiLearning?: TachographAiLearningMeta;
 }
 
-interface TachoScanAppProps {
-  onOpenLicenceScanner: () => void;
+export interface TachoScanAppProps {
+  onOpenLicenceScanner?: () => void;
   driverLicenceProfile?: DriverLicenceProfile | null;
   onSwitchToVehicleCheck?: () => void;
   onSwitchToSiteRisk?: () => void;
@@ -213,7 +213,7 @@ export const SCANNING_TIPS = [
 ];
 
 export const TachoScanApp: React.FC<TachoScanAppProps> = ({
-  onOpenLicenceScanner,
+  onOpenLicenceScanner = () => {},
   driverLicenceProfile,
   onSwitchToVehicleCheck,
   onSwitchToSiteRisk,

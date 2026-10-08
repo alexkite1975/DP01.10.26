@@ -491,7 +491,7 @@ export interface DddCardMetadata {
   [key: string]: any;
 }
 
-export type CapacityOccupancyStatus = 'SPACES_AVAILABLE' | 'FILLING_FAST' | 'FULL_REFUSED' | 'CLOSED';
+export type CapacityOccupancyStatus = 'SPACES_AVAILABLE' | 'FILLING_FAST' | 'BUSY_FILLING_FAST' | 'FULL_REFUSED' | 'FULL_NO_SPACES' | 'CLOSED' | string;
 
 export interface ServiceAreaFacilityChecklist {
   showersWorking: boolean;
@@ -515,13 +515,15 @@ export interface DriverServiceReview {
   vehicleReg?: string;
   haulierCompany?: string;
   timestamp: string;
-  overallRating: number;
+  overallRating?: number;
+  overallScore?: number;
   cleanlinessShowersRating?: number;
   securityRating?: number;
   foodQualityRating?: number;
   parkingEaseRating?: number;
   valueForMoneyRating?: number;
-  reviewTitle: string;
+  reviewTitle?: string;
+  title?: string;
   comment: string;
   helpfulCount?: number;
   [key: string]: any;

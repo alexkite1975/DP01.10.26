@@ -56,9 +56,9 @@ import {
 } from '../../services/cargoCrimeService';
 import { DriverVehicleProfile, DriverLicenceProfile } from '../../types';
 
-interface DriverSafetyShieldHubProps {
-  onBack: () => void;
-  driverVehicle: DriverVehicleProfile;
+export interface DriverSafetyShieldHubProps {
+  onBack?: () => void;
+  driverVehicle?: DriverVehicleProfile;
   onUpdateDriverVehicle?: (updated: DriverVehicleProfile) => void;
   driverLicenceProfile?: DriverLicenceProfile | null;
   initialTab?: SafetyTabId;
@@ -75,8 +75,16 @@ export type SafetyTabId =
   | 'DIGITAL_CB';
 
 export const DriverSafetyShieldHub: React.FC<DriverSafetyShieldHubProps> = ({
-  onBack,
-  driverVehicle,
+  onBack = () => {},
+  driverVehicle = {
+    driverName: 'HGV Driver',
+    vehicleReg: 'UK-HGV',
+    vehicleCategory: '44T_ARTIC_HGV',
+    heightMeters: 4.65,
+    weightTonnes: 44,
+    lengthMeters: 16.5,
+    hasTailLift: false
+  },
   onUpdateDriverVehicle,
   driverLicenceProfile,
   initialTab = 'BRIDGE_STRIKE'
