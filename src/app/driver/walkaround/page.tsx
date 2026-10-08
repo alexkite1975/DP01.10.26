@@ -102,6 +102,15 @@ export default function DriverWalkaroundPage() {
               passedZones={passedBlueprintZones}
               onTogglePassZone={handleToggleZone}
             />
+            <div className="pt-2">
+              <Link
+                href="/driver/inspections/signoff"
+                className="w-full py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-cockpit shadow-glow-emerald transition touch-press"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Proceed to Statutory Sign-Off ({passedBlueprintZones.length}/10 Hotspots Verified)</span>
+              </Link>
+            </div>
           </div>
         ) : (
           <VehicleCheckApp />
