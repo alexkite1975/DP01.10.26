@@ -107,6 +107,13 @@ export interface TachoScanAppProps {
   onSwitchToSiteRisk?: () => void;
   onSwitchToRouteOptimiser?: () => void;
   onSwitchToSafetyShield?: () => void;
+  initialView?:
+    | 'WELCOME'
+    | 'ACTION_MENU'
+    | 'FULLSCREEN_SCAN'
+    | 'UPLOAD_VIEW'
+    | 'CARD_READER_VIEW'
+    | 'DAYS_OVERVIEW';
 }
 
 // Sample thermal printouts for upload mode (Trained on Real Stoneridge SE5000 Gen 2 Rolls)
@@ -218,7 +225,8 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
   onSwitchToVehicleCheck,
   onSwitchToSiteRisk,
   onSwitchToRouteOptimiser,
-  onSwitchToSafetyShield
+  onSwitchToSafetyShield,
+  initialView = 'ACTION_MENU'
 }) => {
   // Navigation View State
   const [view, setView] = useState<
@@ -230,7 +238,7 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
     | 'PROGRESS_BAR'
     | 'DAYS_OVERVIEW'
     | 'DAY_DETAIL'
-  >('WELCOME');
+  >(initialView);
 
   // Video walkthrough modal state
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
