@@ -202,21 +202,21 @@ export default function ComingSoonPage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-            Tacho-Scan AI for Commercial Drivers
+            How DrivePartners &amp; Tacho-Scan Work
           </h1>
 
           <p className="text-sm sm:text-base text-slate-400 leading-relaxed font-sans">
-            Scan your thermal printout roll or download your driver card using any card reader of your choice. Automated 28-day DVSA compliance matrix and in-cab Article 12 defense slips.
+            A complete step-by-step visual walkthrough: account creation with the Verification Trinity, in-cab native language coaching, dual tacho ingestion, live cockpit HUD, and predictive availability for future shifts.
           </p>
         </div>
 
-        {/* 🎬 40-SECOND FEATURE VIDEO AT THE TOP OF THE PAGE */}
+        {/* 🎬 INTERACTIVE STEP-BY-STEP GUIDE WITH BRITISH FEMALE VOICEOVER */}
         <div className="space-y-2.5">
           <div className="flex items-center justify-between text-xs font-mono px-1">
             <span className="text-white font-bold flex items-center gap-2">
-              <Play className="w-4 h-4 text-cyan-400 fill-cyan-400" /> 40-Second Feature Video (with British Voiceover)
+              <Play className="w-4 h-4 text-emerald-400 fill-emerald-400" /> Interactive In-Cab Guide (British Female Voiceover)
             </span>
-            <span className="text-cyan-400 hidden sm:inline">00:40 Runtime • Interactive In-Cab Demonstration</span>
+            <span className="text-emerald-400 hidden sm:inline">5 Step-by-Step Chapters • Account Setup to Future Availability</span>
           </div>
           <TachoScanMarketingVideo onPreRegisterClick={() => setIsDriverPreRegisterOpen(true)} />
         </div>
