@@ -258,6 +258,9 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
   onSwitchToSafetyShield,
   initialView = 'ACTION_MENU'
 }) => {
+  // Active Profile State (supports prop or localStorage from onboarding)
+  const [activeProfile, setActiveProfile] = useState<DriverLicenceProfile | null>(driverLicenceProfile || null);
+
   // Navigation View State
   const [view, setView] = useState<
     | 'WELCOME'
@@ -269,6 +272,29 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
     | 'DAYS_OVERVIEW'
     | 'DAY_DETAIL'
   >(initialView);
+
+  useEffect(() => {
+    if (!driverLicenceProfile && typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('dp_driver_profile');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && (parsed.fullName || parsed.licenceNumber)) {
+            setActiveProfile(parsed);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load profile from localStorage', err);
+      }
+    } else if (driverLicenceProfile) {
+      setActiveProfile(driverLicenceProfile);
+    }
+  }, [driverLicenceProfile]);
+
+  const effectiveDriverName = activeProfile?.fullName || driverLicenceProfile?.fullName || 'Alexander James Kite';
+  const effectiveCardNumber = activeProfile?.tachoCardNumber || driverLicenceProfile?.tachoCardNumber || 'DB25029078179500';
+  const effectiveLicenceNumber = activeProfile?.licenceNumber || driverLicenceProfile?.licenceNumber || 'KITE9707185AJ9ZM';
+  const effectiveLanguage = activeProfile?.appLanguage || driverLicenceProfile?.appLanguage || 'EN';
 
   // Video walkthrough modal state
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
@@ -309,8 +335,14 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
   const [art12Narrative, setArt12Narrative] = useState(
     'Severe multi-vehicle collision on M6 forced full carriageway closure. Trapped in live traffic with no exit available. Diverted at slow speed to nearest designated safe truck parking at Sandbach Services.'
   );
-  const [art12Signature, setArt12Signature] = useState(driverLicenceProfile?.fullName || 'Alexander James');
+  const [art12Signature, setArt12Signature] = useState(effectiveDriverName);
   const [selectedArt12TemplateId, setSelectedArt12TemplateId] = useState<string>('M6_J18_CLOSURE');
+
+  useEffect(() => {
+    if (effectiveDriverName) {
+      setArt12Signature(effectiveDriverName);
+    }
+  }, [effectiveDriverName]);
 
   // AI Smart Debrief & Circadian states
   const [isSmartDebriefOpen, setIsSmartDebriefOpen] = useState(false);
@@ -1110,8 +1142,8 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
       result: {
         id: `tacho-${sample.dateKey}-${Date.now()}`,
         timestamp: new Date().toISOString(),
-        driverName: driverLicenceProfile?.fullName || 'Alexander James Kite',
-        driverCardNumber: driverLicenceProfile?.tachoCardNumber || 'UK / DB250290781795 0 0',
+        driverName: effectiveDriverName,
+        driverCardNumber: effectiveCardNumber,
         vehicleReg: sample.vehicleReg,
         printoutDate: sample.dateKey,
         printoutType: '24h Daily Driver Card Activity Printout (Stoneridge SE5000 Smart Gen 2)',
@@ -1465,7 +1497,7 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
 
   // Export Raw .DDD Binary File
   const handleExportDddFile = (targetDay?: TachographDayRecord) => {
-    const cardNo = driverLicenceProfile?.tachoCardNumber || 'UK9021482019';
+    const cardNo = effectiveCardNumber;
     const cleanCardNo = cardNo.replace(/[^a-zA-Z0-9]/g, '');
     const dateStr = targetDay
       ? targetDay.dateKey.replace(/-/g, '')
@@ -1500,7 +1532,7 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
       id: `art12-${art12SelectedDateKey}-${Date.now()}`,
       dateKey: art12SelectedDateKey,
       driverName: art12Signature,
-      cardNumber: driverLicenceProfile?.tachoCardNumber || 'UK-9021482019',
+      cardNumber: effectiveCardNumber,
       vehicleReg: 'GN21 XRO',
       occurredAtTime: '11:15 UTC',
       location: art12Location,
@@ -1550,8 +1582,8 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
     const totalMiles = importedDays.reduce((acc, d) => acc + d.distanceDrivenMiles, 0);
 
     const text = `DRIVE PARTNERS TACHO-SCAN: WEEKLY TIMESHEET SUMMARY
-Driver: ${driverLicenceProfile?.fullName || 'Alexander James'}
-Card Number: ${driverLicenceProfile?.tachoCardNumber || 'UK-9021482019'}
+Driver: ${effectiveDriverName}
+Card Number: ${effectiveCardNumber}
 Days Logged: ${importedDays.length}
 --------------------------------------------------
 Total Driving Hours: ${Math.floor(totalDriveMins / 60)}h ${totalDriveMins % 60}m
@@ -1577,8 +1609,8 @@ Generated via Drive Partners Tacho-Scan`;
     wtdCompliant: boolean,
     infringements: string[]
   ): TachographScanResult {
-    const driverName = driverLicenceProfile?.fullName || 'Alexander James';
-    const cardNumber = driverLicenceProfile?.tachoCardNumber || 'UK-9021482019';
+    const driverName = effectiveDriverName;
+    const cardNumber = effectiveCardNumber;
 
     const activities: TachographActivityBlock[] = [
       { activityType: 'REST', timeStart: '00:00', timeEnd: '06:00', durationMinutes: 360 },
@@ -2002,11 +2034,24 @@ Generated via Drive Partners Tacho-Scan`;
             </span>
           </div>
 
-          <div className="space-y-1">
-            <h2 className="text-2xl font-black text-white">Tacho-Scan</h2>
-            <p className="text-xs text-slate-400">
-              Select how you would like to import your tachograph record:
-            </p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                <span>Tacho-Scan</span>
+                {effectiveLanguage !== 'EN' && (
+                  <span className="text-xs font-mono font-normal px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800">
+                    {effectiveLanguage === 'PL' && '🇵🇱 Polski'}
+                    {effectiveLanguage === 'RO' && '🇷🇴 Română'}
+                    {effectiveLanguage === 'LT' && '🇱🇹 Lietuvių'}
+                    {effectiveLanguage === 'BG' && '🇧🇬 Български'}
+                    {effectiveLanguage === 'ES' && '🇪🇸 Español'}
+                  </span>
+                )}
+              </h2>
+              <p className="text-xs text-slate-400">
+                Driver: <span className="text-white font-bold">{effectiveDriverName}</span> • Card: <span className="text-cyan-400 font-mono">{effectiveCardNumber}</span>
+              </p>
+            </div>
           </div>
 
           {/* Active Shift Cockpit HUD Banner (when shift data is present) */}
@@ -3007,7 +3052,7 @@ Generated via Drive Partners Tacho-Scan`;
 
           {/* AI Smart Debrief & Circadian Coach Banner (When data exists) */}
           {importedDays.length > 0 && (() => {
-            const debrief = generateSmartDebrief(importedDays, driverLicenceProfile?.fullName || 'Alexander James');
+            const debrief = generateSmartDebrief(importedDays, effectiveDriverName);
             return (
               <div className="p-4 sm:p-5 rounded-3xl cockpit-panel border-t-2 border-t-purple-400 border-purple-500/30 space-y-3 shadow-cockpit">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -3825,15 +3870,15 @@ Generated via Drive Partners Tacho-Scan`;
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 text-xs font-mono bg-slate-50 p-3 rounded-xl border border-slate-200">
                 <div>
                   <span className="text-slate-500 block text-[10px]">DRIVER NAME:</span>
-                  <strong>{driverLicenceProfile?.fullName || 'Alexander James'}</strong>
+                  <strong>{effectiveDriverName}</strong>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px]">TACHO CARD NO:</span>
-                  <strong>{driverLicenceProfile?.tachoCardNumber || 'UK-9021482019'}</strong>
+                  <strong>{effectiveCardNumber}</strong>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px]">LICENCE NO:</span>
-                  <strong>{driverLicenceProfile?.licenceNumber || 'JAMES902148AJ99'}</strong>
+                  <strong>{effectiveLicenceNumber}</strong>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px]">INSPECTION WINDOW:</span>
@@ -4783,7 +4828,7 @@ Generated via Drive Partners Tacho-Scan`;
       {/* 17. AI SMART DEBRIEF & PLAIN-ENGLISH COACHING MODAL                       */}
       {/* ========================================================================= */}
       {isSmartDebriefOpen && (() => {
-        const debrief = generateSmartDebrief(importedDays, driverLicenceProfile?.fullName || 'Alexander James');
+        const debrief = generateSmartDebrief(importedDays, effectiveDriverName);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200">
             <div className="relative w-full max-w-2xl rounded-3xl bg-slate-950 border border-purple-500/50 text-white shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto">
@@ -4926,7 +4971,7 @@ Generated via Drive Partners Tacho-Scan`;
       {/* 18. CIRCADIAN RHYTHM & FATIGUE INDEX MODAL                                */}
       {/* ========================================================================= */}
       {isCircadianModalOpen && (() => {
-        const debrief = generateSmartDebrief(importedDays, driverLicenceProfile?.fullName || 'Alexander James');
+        const debrief = generateSmartDebrief(importedDays, effectiveDriverName);
         const { fatigueAnalysis } = debrief;
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200">
@@ -5045,7 +5090,7 @@ Generated via Drive Partners Tacho-Scan`;
                 <div>
                   <span className="text-[10px] font-mono uppercase text-slate-500 font-bold block">DRIVER</span>
                   <strong className="text-base font-black text-slate-900">
-                    {driverLicenceProfile?.fullName || 'Alexander James'}
+                    {effectiveDriverName}
                   </strong>
                 </div>
                 <span className="px-2.5 py-1 rounded bg-emerald-600 text-white font-mono text-[10px] font-black">
@@ -5056,7 +5101,7 @@ Generated via Drive Partners Tacho-Scan`;
               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                 <div>
                   <span className="text-[10px] text-slate-500 block">CARD NO:</span>
-                  <strong>{driverLicenceProfile?.tachoCardNumber || 'UK-9021482019'}</strong>
+                  <strong>{effectiveCardNumber}</strong>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-500 block">VEHICLE REG:</span>

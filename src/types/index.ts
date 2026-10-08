@@ -971,7 +971,7 @@ export interface DriverLicenceProfile {
   preferredNavApp?: PreferredNavApp;
   measurementUnits?: 'IMPERIAL' | 'METRIC';
   distanceUnits?: 'MILES' | 'KILOMETERS';
-  appLanguage?: 'EN' | 'PL' | 'RO' | 'LT' | 'ES';
+  appLanguage?: 'EN' | 'PL' | 'RO' | 'LT' | 'BG' | 'ES';
   paymentStructure?: 'PAYE' | 'LTD' | 'UMBRELLA';
   vehicleCategory?: VehicleCategory;
   avoidLowBridges?: boolean;
