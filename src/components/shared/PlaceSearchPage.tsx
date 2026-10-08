@@ -96,26 +96,36 @@ const DEFAULT_RECENT_HUBS: SearchedHub[] = [
   }
 ];
 
-interface PlaceSearchPageProps {
-  sites: SiteRiskAssessment[];
-  driverVehicle: DriverVehicleProfile;
-  onSelectSite: (site: SiteRiskAssessment) => void;
+export interface PlaceSearchPageProps {
+  sites?: SiteRiskAssessment[];
+  driverVehicle?: DriverVehicleProfile;
+  onSelectSite?: (site: SiteRiskAssessment) => void;
   onSelectSitePlan?: (site: SiteRiskAssessment) => void;
-  onGenerateRiskAssessmentForPlace: (placeDetails: {
+  onGenerateRiskAssessmentForPlace?: (placeDetails: {
     title: string;
     address: string;
     lat: number;
     lng: number;
     placeId?: string;
   }) => void;
+  onOpenCreateSite?: () => void;
 }
 
 export const PlaceSearchPage: React.FC<PlaceSearchPageProps> = ({
-  sites,
-  driverVehicle,
+  sites = [],
+  driverVehicle = {
+    driverName: 'HGV Driver',
+    vehicleReg: 'UK-HGV',
+    vehicleCategory: '44T_ARTIC_HGV',
+    heightMeters: 4.65,
+    weightTonnes: 44,
+    lengthMeters: 16.5,
+    hasTailLift: false
+  },
   onSelectSite,
   onSelectSitePlan,
-  onGenerateRiskAssessmentForPlace
+  onGenerateRiskAssessmentForPlace,
+  onOpenCreateSite
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);

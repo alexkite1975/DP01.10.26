@@ -3399,3 +3399,5 @@ Generated via Drive Partners Tacho-Scan`;
     </div>
   );
 };
+
+export default TachoScanApp;

@@ -1402,3 +1402,5 @@ export const DriverSafetyShieldHub: React.FC<DriverSafetyShieldHubProps> = ({
     </div>
   );
 };
+
+export default DriverSafetyShieldHub;

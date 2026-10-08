@@ -170,10 +170,10 @@ export function VehicleCheck({ onBack, onComplete }: VehicleCheckProps) {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 my-6">
             {[
-              { val: '4.00', label: '4.00m (13' 1")', desc: 'Rigid / Low Box' },
-              { val: '4.20', label: '4.20m (13' 9")', desc: 'Reefer / Urban' },
-              { val: '4.65', label: '4.65m (15' 3")', desc: 'Standard Curtainsider' },
-              { val: '4.90', label: '4.90m (16' 1")', desc: 'High Double-Decker' }
+              { val: '4.00', label: '4.00m (13\' 1")', desc: 'Rigid / Low Box' },
+              { val: '4.20', label: '4.20m (13\' 9")', desc: 'Reefer / Urban' },
+              { val: '4.65', label: '4.65m (15\' 3")', desc: 'Standard Curtainsider' },
+              { val: '4.90', label: '4.90m (16\' 1")', desc: 'High Double-Decker' }
             ].map(h => (
               <button
                 key={h.val}

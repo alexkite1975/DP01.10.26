@@ -3045,3 +3045,5 @@ Generated via Drive Partners Vehicle-Check`;
     </div>
   );
 };
+
+export default VehicleCheckApp;

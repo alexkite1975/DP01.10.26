@@ -36,7 +36,7 @@ export default function HaulierMasterCommand() {
         if (s.id !== siteId) return s;
         return {
           ...s,
-          pendingModifications: (s.pendingModifications || []).filter(m => m.id !== modificationId)
+          pendingModifications: (s.pendingModifications || []).filter((m: any) => m.id !== modificationId)
         };
       })
     );
@@ -48,7 +48,7 @@ export default function HaulierMasterCommand() {
         if (s.id !== siteId) return s;
         return {
           ...s,
-          pendingModifications: (s.pendingModifications || []).filter(m => m.id !== modificationId)
+          pendingModifications: (s.pendingModifications || []).filter((m: any) => m.id !== modificationId)
         };
       })
     );

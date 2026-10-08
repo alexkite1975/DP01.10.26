@@ -626,7 +626,7 @@ export const MotorwayServiceDetail: React.FC<MotorwayServiceDetailProps> = ({
                     SNAP Account
                   </span>
                 )}
-                {msa.parkingTariff.fuelCardsAccepted.map((fc) => (
+                {msa.parkingTariff.fuelCardsAccepted.map((fc: string) => (
                   <span
                     key={fc}
                     className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 text-[10px] font-mono border border-slate-700"
@@ -853,7 +853,7 @@ export const MotorwayServiceDetail: React.FC<MotorwayServiceDetailProps> = ({
 
                 <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center gap-2">
                   <span className="text-[11px] text-slate-400">Food Outlets on Site:</span>
-                  {msa.facilities.foodOutlets.map((outlet) => (
+                  {msa.facilities.foodOutlets.map((outlet: string) => (
                     <span
                       key={outlet}
                       className="px-2 py-0.5 rounded-md bg-slate-900 text-slate-300 text-[11px] font-bold border border-slate-800"
@@ -1033,7 +1033,7 @@ export const MotorwayServiceDetail: React.FC<MotorwayServiceDetailProps> = ({
 
             {/* Reviews List */}
             <div className="space-y-3">
-              {msa.driverReviews.map((rev) => (
+              {msa.driverReviews.map((rev: any) => (
                 <div
                   key={rev.id}
                   className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5 transition-all hover:border-slate-700"

@@ -132,14 +132,16 @@ export default function TomTomTruckMap({
         lineJoin: 'round'
       }).addTo(mapInstanceRef.current);
 
-      L.marker([sPos.lat, sPos.lon])
-        .addTo(markersLayerRef.current)
-        .bindPopup(`<b>Start Point:</b> ${origin}`);
+      if (markersLayerRef.current) {
+        L.marker([sPos.lat, sPos.lon])
+          .addTo(markersLayerRef.current)
+          .bindPopup(`<b>Start Point:</b> ${origin}`);
 
-      L.marker([ePos.lat, ePos.lon])
-        .addTo(markersLayerRef.current)
-        .bindPopup(`<b>Destination (Bay 24):</b> ${destination}`)
-        .openPopup();
+        L.marker([ePos.lat, ePos.lon])
+          .addTo(markersLayerRef.current)
+          .bindPopup(`<b>Destination (Bay 24):</b> ${destination}`)
+          .openPopup();
+      }
 
       mapInstanceRef.current.fitBounds(routeLayerRef.current.getBounds(), {
         padding: [30, 30]

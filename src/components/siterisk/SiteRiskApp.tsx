@@ -2081,3 +2081,5 @@ export const SiteRiskApp: React.FC<SiteRiskAppProps> = ({
     </div>
   );
 };
+
+export default SiteRiskApp;

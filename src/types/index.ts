@@ -1,6 +1,6 @@
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
-export type UserRole = 'BUSINESS_ADMIN' | 'SITE_MANAGER' | 'DRIVER';
+export type UserRole = 'BUSINESS_ADMIN' | 'SITE_MANAGER' | 'DRIVER' | 'HAULIER' | 'haulier' | 'admin' | 'driver';
 
 export type VehicleCategory =
   | 'CAR_VAN'
@@ -174,6 +174,7 @@ export interface BusinessSiteSection {
   baselineHazards: HazardMatrixItem[];
   approachVideoGuide: ApproachVideoGuide;
   media: MediaAsset[];
+  designatedHGVRoute?: string;
   sitePlan?: SitePlanData;
 }
 
@@ -224,6 +225,9 @@ export interface SiteRiskAssessment {
   placePhotos?: string[];
   nearbySensitivities?: NearbySensitivity[];
   isOfflineCached?: boolean;
+  siteType?: 'DEPOT' | 'MOTORWAY_SERVICES' | 'CUSTOMER_SITE' | 'DISTRIBUTION_CENTRE' | string;
+  motorwayServicesData?: any;
+  pendingModifications?: any[];
   dynamicRiskIndex?: DynamicRiskIndex;
   inductionGatekeeping?: InductionGatekeeping;
   congestionTracker?: CongestionWaitTracker;
@@ -417,10 +421,110 @@ export interface TachographScanResult {
     workingMinutes: number;
     restMinutes: number;
     poaMinutes: number;
+    estimatedPayGbp?: number;
   };
-  remainingCounters?: any;
-  workedHours?: any;
-  cardMetadata?: any;
+  remainingCounters?: TachoRemainingCounters;
+  workedHours?: TachoWorkedHoursSummary;
+  cardMetadata?: DddCardMetadata;
+}
+
+export interface TachoDetailedInfringement {
+  id: string;
+  type?: string;
+  description?: string;
+  timestamp?: string;
+  durationMinutes?: number;
+  excessMinutes?: number;
+  severity: 'VSI' | 'MSI' | 'SI' | 'MI' | 'MINOR' | 'SERIOUS' | 'VERY_SERIOUS' | 'MOST_SERIOUS' | string;
+  fineGbp?: number;
+  estimatedFineGbp?: number;
+  regulationCode?: string;
+  ruleReference?: string;
+  title?: string;
+  occurredAt?: string;
+  durationMinutesOver?: number;
+  countermeasure?: string;
+  explanation?: string;
+  preventionTip?: string;
+  [key: string]: any;
+}
+
+export interface TachoRemainingCounters {
+  continuousDriveRemainingMinutes: number;
+  dailyDriveRemainingMinutes: number;
+  weeklyDriveRemainingMinutes: number;
+  twoWeeklyDriveRemainingMinutes?: number;
+  fortnightlyDriveRemainingMinutes?: number;
+  dailyRestRequiredMinutes: number;
+  weeklyRestRequiredMinutes: number;
+  nextShiftEarliestStartTime: string;
+  extendedDailyDriveDaysRemaining?: number;
+  reducedRestDaysRemaining?: number;
+  [key: string]: any;
+}
+
+export interface TachoWorkedHoursSummary {
+  totalDrivingMinutes: number;
+  totalOtherWorkMinutes: number;
+  totalAvailabilityMinutes: number;
+  totalRestMinutes: number;
+  totalShiftMinutes: number;
+  nightWorkMinutes: number;
+  nightWorkThresholdExceeded: boolean;
+  estimatedGrossPayGbp: number;
+  estimatedPayGbp?: number;
+  [key: string]: any;
+}
+
+export interface DddCardMetadata {
+  cardHolderName: string;
+  cardNumber: string;
+  issuingMemberState: string;
+  drivingLicenceNumber: string;
+  cardExpiryDate: string;
+  cardGeneration: string;
+  daysUntilMandatoryDownload: number;
+  lastDownloadDate: string;
+  dataSource: string;
+  fileSha256: string;
+  fileSizeBytes: number;
+  [key: string]: any;
+}
+
+export type CapacityOccupancyStatus = 'SPACES_AVAILABLE' | 'FILLING_FAST' | 'FULL_REFUSED' | 'CLOSED';
+
+export interface ServiceAreaFacilityChecklist {
+  showersWorking: boolean;
+  showerRating?: number;
+  hotFood24h: boolean;
+  foodOutlets?: string[];
+  securityLevel?: string;
+  securityRating?: number;
+  fuelTheftRisk?: string;
+  truckWash?: boolean;
+  adBluePump?: boolean;
+  evTruckCharging?: boolean;
+  freeWifi?: boolean;
+  quietSleepZone?: boolean;
+  [key: string]: any;
+}
+
+export interface DriverServiceReview {
+  id: string;
+  driverName: string;
+  vehicleReg?: string;
+  haulierCompany?: string;
+  timestamp: string;
+  overallRating: number;
+  cleanlinessShowersRating?: number;
+  securityRating?: number;
+  foodQualityRating?: number;
+  parkingEaseRating?: number;
+  valueForMoneyRating?: number;
+  reviewTitle: string;
+  comment: string;
+  helpfulCount?: number;
+  [key: string]: any;
 }
 
 // --- Phase 3: In-Cab Safety & Telematics Infrastructure ---
