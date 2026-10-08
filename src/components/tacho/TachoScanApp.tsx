@@ -53,6 +53,7 @@ import {
   parseDddFile,
   formatMinutesToHours
 } from '../../services/dddParserService';
+import { audioFeedback } from '../../utils/audioFeedback';
 
 // Storage key for the 14-day imported tachograph history
 const STORAGE_KEY_TACHO_DAYS = 'dp_tacho_imported_days_v1';
@@ -1531,8 +1532,11 @@ Generated via Drive Partners Tacho-Scan`;
           <div className="space-y-3">
             {/* 1. Scan Printout (Camera) */}
             <button
-              onClick={() => setView('FULLSCREEN_SCAN')}
-              className="w-full p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-slate-900 to-slate-900 border-2 border-amber-500/50 hover:border-amber-400 flex items-center justify-between transition-all group text-left cursor-pointer shadow-lg shadow-amber-500/10"
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setView('FULLSCREEN_SCAN');
+              }}
+              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-amber-400 border-amber-500/40 hover:border-amber-400 flex items-center justify-between transition-all group text-left cursor-pointer shadow-glow-amber touch-press"
             >
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md shadow-amber-500/30">
@@ -1555,8 +1559,11 @@ Generated via Drive Partners Tacho-Scan`;
 
             {/* Scanning Tips Animated Video */}
             <button
-              onClick={() => setIsScanningTipsModalOpen(true)}
-              className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-slate-900 to-slate-900 border border-amber-500/40 hover:border-amber-400 flex items-center justify-between transition-all group text-left cursor-pointer"
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setIsScanningTipsModalOpen(true);
+              }}
+              className="w-full p-3.5 rounded-2xl cockpit-panel border-amber-500/30 hover:border-amber-400/60 flex items-center justify-between transition-all group text-left cursor-pointer touch-press"
             >
               <div className="flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
@@ -1579,8 +1586,11 @@ Generated via Drive Partners Tacho-Scan`;
 
             {/* 2. Upload Printout */}
             <button
-              onClick={() => setView('UPLOAD_VIEW')}
-              className="w-full p-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-cyan-500/50 flex items-center justify-between transition-all group text-left cursor-pointer"
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setView('UPLOAD_VIEW');
+              }}
+              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-cyan-400 border-cyan-500/30 hover:border-cyan-400/80 flex items-center justify-between transition-all group text-left cursor-pointer touch-press shadow-sm"
             >
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
@@ -1600,8 +1610,11 @@ Generated via Drive Partners Tacho-Scan`;
 
             {/* 3. Card Reader */}
             <button
-              onClick={() => setView('CARD_READER_VIEW')}
-              className="w-full p-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 flex items-center justify-between transition-all group text-left cursor-pointer"
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setView('CARD_READER_VIEW');
+              }}
+              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-blue-400 border-blue-500/30 hover:border-blue-400/80 flex items-center justify-between transition-all group text-left cursor-pointer touch-press shadow-sm"
             >
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
@@ -1609,7 +1622,7 @@ Generated via Drive Partners Tacho-Scan`;
                 </div>
                 <div>
                   <div className="text-base font-bold text-white group-hover:text-blue-300">
-                    Card Reader
+                    Card Reader (.DDD)
                   </div>
                   <div className="text-xs text-slate-400">
                     Connect hardware reader &amp; download driver card data
@@ -1622,13 +1635,14 @@ Generated via Drive Partners Tacho-Scan`;
             {/* 4. See Dashboard */}
             <button
               onClick={() => {
+                audioFeedback.playCheckpointClick();
                 if (importedDays.length === 0) {
                   handleUploadPrintout(0);
                 } else {
                   setView('DAYS_OVERVIEW');
                 }
               }}
-              className="w-full p-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 flex items-center justify-between transition-all group text-left cursor-pointer"
+              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-emerald-400 border-emerald-500/30 hover:border-emerald-400/80 flex items-center justify-between transition-all group text-left cursor-pointer touch-press shadow-sm"
             >
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
@@ -1637,7 +1651,7 @@ Generated via Drive Partners Tacho-Scan`;
                 <div>
                   <div className="text-base font-bold text-white group-hover:text-emerald-300 flex items-center gap-2">
                     <span>See Dashboard</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                       {importedDays.length} {importedDays.length === 1 ? 'day' : 'days'}
                     </span>
                   </div>
@@ -1652,11 +1666,14 @@ Generated via Drive Partners Tacho-Scan`;
             {/* 5. Switch to Autonomous DVSA Vehicle-Check */}
             {onSwitchToVehicleCheck && (
               <button
-                onClick={onSwitchToVehicleCheck}
-                className="w-full p-4 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-slate-900 to-slate-900 border border-emerald-500/40 hover:border-emerald-400 flex items-center justify-between transition-all group text-left cursor-pointer shadow-lg shadow-emerald-500/5"
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  onSwitchToVehicleCheck();
+                }}
+                className="w-full p-4 rounded-2xl cockpit-panel border border-slate-800 hover:border-emerald-500/40 flex items-center justify-between transition-all group text-left cursor-pointer shadow-sm touch-press"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
                     <Truck className="w-6 h-6" />
                   </div>
                   <div>
@@ -1851,8 +1868,11 @@ Generated via Drive Partners Tacho-Scan`;
         <main className="flex-1 flex flex-col justify-center max-w-xl mx-auto w-full p-4 sm:p-6 space-y-5">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => setView('ACTION_MENU')}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer"
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setView('ACTION_MENU');
+              }}
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer touch-press"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
@@ -1870,7 +1890,7 @@ Generated via Drive Partners Tacho-Scan`;
           </div>
 
           {/* File input button */}
-          <label className="p-6 rounded-2xl border-2 border-dashed border-slate-700 hover:border-amber-400 bg-slate-900 flex flex-col items-center justify-center text-center space-y-2 cursor-pointer transition-colors group">
+          <label className="p-6 rounded-2xl border-2 border-dashed border-slate-700 hover:border-amber-400 cockpit-panel flex flex-col items-center justify-center text-center space-y-2 cursor-pointer transition-colors group shadow-cockpit">
             <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Upload className="w-6 h-6" />
             </div>
@@ -1888,24 +1908,27 @@ Generated via Drive Partners Tacho-Scan`;
           {/* Sample Rolls */}
           <div className="space-y-2 pt-2">
             <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
-              Or Test With Sample Thermal Rolls:
+              Or Test With Real Stoneridge SE5000 Thermal Rolls:
             </span>
             {SAMPLE_PRINTOUTS.map((roll, idx) => (
               <button
                 key={roll.id}
-                onClick={() => handleUploadPrintout(idx)}
-                className="w-full p-3.5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-400/60 flex items-center justify-between text-left transition-all group cursor-pointer"
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  handleUploadPrintout(idx);
+                }}
+                className="w-full p-4 rounded-2xl cockpit-panel border-l-4 border-l-amber-400 border-slate-800 hover:border-amber-400/60 flex items-center justify-between text-left transition-all group cursor-pointer touch-press shadow-sm"
               >
                 <div>
                   <div className="text-xs font-bold text-white group-hover:text-amber-300">
                     {roll.title}
                   </div>
                   <div className="text-[11px] text-slate-400 mt-0.5">{roll.subtitle}</div>
-                  <div className="text-[10px] text-amber-400/80 font-mono mt-0.5">
-                    Odometer: {roll.odoStart.toLocaleString()} ➔ {roll.odoEnd.toLocaleString()} km ({roll.odoEnd - roll.odoStart} km)
+                  <div className="text-[10px] text-amber-400 font-mono mt-0.5 font-bold">
+                    Odometer: {roll.odoStart.toLocaleString()} ➔ {roll.odoEnd.toLocaleString()} km ({roll.odoEnd - roll.odoStart} km driven)
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400" />
+                <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-transform" />
               </button>
             ))}
           </div>
@@ -1919,8 +1942,11 @@ Generated via Drive Partners Tacho-Scan`;
         <main className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full p-4 sm:p-6 space-y-6 text-center">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => setView('ACTION_MENU')}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer"
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setView('ACTION_MENU');
+              }}
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer touch-press"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
@@ -1930,7 +1956,7 @@ Generated via Drive Partners Tacho-Scan`;
             </span>
           </div>
 
-          <div className="w-20 h-20 rounded-3xl bg-blue-500/10 border-2 border-blue-500/40 text-blue-400 flex items-center justify-center mx-auto shadow-xl shadow-blue-500/10">
+          <div className="w-20 h-20 rounded-3xl bg-blue-500/10 border-2 border-blue-500/40 text-blue-400 flex items-center justify-center mx-auto shadow-glow-blue">
             <CreditCard className="w-10 h-10" />
           </div>
 
@@ -1941,7 +1967,7 @@ Generated via Drive Partners Tacho-Scan`;
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-left text-xs font-mono space-y-1.5">
+          <div className="p-4 rounded-2xl cockpit-panel text-left text-xs font-mono space-y-1.5 shadow-cockpit">
             <div className="flex justify-between">
               <span className="text-slate-400">Hardware Interface:</span>
               <span className="text-emerald-400 font-bold">USB-C / CCID Ready</span>
@@ -1952,22 +1978,28 @@ Generated via Drive Partners Tacho-Scan`;
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Download Scope:</span>
-              <span className="text-cyan-400">Last 7-14 Days Multi-Day Records</span>
+              <span className="text-cyan-400 font-bold">Last 7-14 Days Multi-Day Records</span>
             </div>
           </div>
 
           <div className="space-y-2.5">
             <button
-              onClick={handleDownloadFromCardReader}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm shadow-xl shadow-blue-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                handleDownloadFromCardReader();
+              }}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm shadow-xl shadow-blue-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer touch-press"
             >
               <CreditCard className="w-5 h-5" />
               <span>Click on Download</span>
             </button>
 
             <button
-              onClick={() => handleExportDddFile()}
-              className="w-full py-3 rounded-2xl bg-slate-900 hover:bg-slate-850 text-cyan-300 font-bold text-xs border border-cyan-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                handleExportDddFile();
+              }}
+              className="w-full py-3 rounded-2xl cockpit-panel hover:bg-slate-800 text-cyan-300 font-bold text-xs border border-cyan-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer touch-press"
             >
               <Download className="w-4 h-4" />
               <span>Download Raw .DDD File Directly</span>
@@ -2133,11 +2165,11 @@ Generated via Drive Partners Tacho-Scan`;
                 return (
                   <div
                     key={day.dateKey}
-                    className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 transition-all space-y-3"
+                    className="p-4 sm:p-5 rounded-2xl cockpit-panel border-t-2 border-t-amber-400/30 hover:border-amber-500/60 transition-all space-y-3 shadow-cockpit"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-amber-400">
+                        <div className="w-10 h-10 rounded-xl bg-slate-800/90 border border-slate-700/60 flex items-center justify-center font-bold text-amber-400 shadow-sm">
                           <Calendar className="w-5 h-5" />
                         </div>
                         <div>
@@ -2163,10 +2195,11 @@ Generated via Drive Partners Tacho-Scan`;
                         {day.aiLearning && (
                           <button
                             onClick={() => {
+                              audioFeedback.playCheckpointClick();
                               setActiveAiRecord(day);
                               setIsAiInspectorOpen(true);
                             }}
-                            className="px-2.5 py-1 rounded-full bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 font-mono text-[10px] font-bold border border-purple-500/30 flex items-center gap-1.5 transition-all cursor-pointer"
+                            className="px-2.5 py-1 rounded-full bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 font-mono text-[10px] font-bold border border-purple-500/30 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
                             title="Click to inspect AI learning calibration & cross-validation checks"
                           >
                             <Sparkles className="w-3 h-3 text-purple-400" />
@@ -2177,8 +2210,8 @@ Generated via Drive Partners Tacho-Scan`;
                         <span
                           className={`text-xs font-mono font-bold px-2.5 py-1 rounded-full border ${
                             isCompliant
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                              : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
+                              : 'bg-rose-500/15 text-rose-300 border-rose-500/40'
                           }`}
                         >
                           {isCompliant ? '✓ COMPLIANT' : '⚠ INFRINGEMENT'}
@@ -2186,10 +2219,11 @@ Generated via Drive Partners Tacho-Scan`;
 
                         <button
                           onClick={() => {
+                            audioFeedback.playCheckpointClick();
                             setSelectedDayKey(day.dateKey);
                             setView('DAY_DETAIL');
                           }}
-                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-bold border border-cyan-500/30 transition-colors flex items-center gap-1 cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-bold border border-cyan-500/30 transition-colors flex items-center gap-1 cursor-pointer touch-press shadow-sm"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>View Timeline</span>
