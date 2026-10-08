@@ -61,6 +61,7 @@ import {
   formatMinutesToHours
 } from '../../services/dddParserService';
 import { audioFeedback } from '../../utils/audioFeedback';
+import { TachoVisualReportsHub } from './TachoVisualReportsHub';
 import {
   generateSmartDebrief,
   PRESET_ARTICLE_12_TEMPLATES,
@@ -291,6 +292,7 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
   const [orderTrackingNo] = useState('GB-DP-892014');
 
   // NEW REPORT MODALS
+  const [isVisualReportsHubOpen, setIsVisualReportsHubOpen] = useState(false);
   const [isDvsaDossierOpen, setIsDvsaDossierOpen] = useState(false);
   const [isArt12ModalOpen, setIsArt12ModalOpen] = useState(false);
   const [art12SelectedDateKey, setArt12SelectedDateKey] = useState<string>('');
@@ -569,6 +571,11 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
 
   const handleSwipeBack = () => {
     // 1. Close any open overlays or modals first
+    if (isVisualReportsHubOpen) {
+      setIsVisualReportsHubOpen(false);
+      showToast('Swiped back');
+      return;
+    }
     if (isScanningTipsModalOpen) {
       setIsScanningTipsModalOpen(false);
       showToast('Swiped back');
@@ -2173,6 +2180,33 @@ Generated via Drive Partners Tacho-Scan`;
               <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-transform" />
             </button>
 
+            {/* Visual Reports & Strategy Hub */}
+            <button
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setIsVisualReportsHubOpen(true);
+              }}
+              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-cyan-400 border-cyan-500/30 hover:border-cyan-400/80 flex items-center justify-between transition-all group text-left cursor-pointer touch-press shadow-sm"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+                  <Sparkles className="w-6 h-6 text-amber-300" />
+                </div>
+                <div>
+                  <div className="text-base font-bold text-white group-hover:text-cyan-300 flex items-center gap-2">
+                    <span>Visual Reports &amp; Strategy Hub</span>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                      AI CO-PILOT
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    24h Activity Ribbon, 28-day DVSA Dossier, Hours Strategy &amp; Vehicle Ledger
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-transform" />
+            </button>
+
             {/* 5. Switch to Autonomous DVSA Vehicle-Check */}
             {onSwitchToVehicleCheck && (
               <button
@@ -2706,6 +2740,18 @@ Generated via Drive Partners Tacho-Scan`;
 
             {/* Quick Action Tools Bar */}
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsVisualReportsHubOpen(true);
+                }}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-cyan-600/25 transition-all cursor-pointer touch-press"
+                title="Open Visual Reports & Strategy Hub"
+              >
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>Visual Reports Hub</span>
+              </button>
+
               <button
                 onClick={() => {
                   audioFeedback.playCheckpointClick();
@@ -3244,6 +3290,18 @@ Generated via Drive Partners Tacho-Scan`;
               <span>Back to Days Overview</span>
             </button>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setIsVisualReportsHubOpen(true);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-xs font-mono font-bold text-white flex items-center gap-1 cursor-pointer shadow-sm"
+                title="Open Visual Reports & Strategy Hub"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>Visual Reports Hub</span>
+              </button>
+
               <button
                 onClick={() => handleExportDddFile(selectedDayRecord)}
                 className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-cyan-300 border border-cyan-500/30 flex items-center gap-1 cursor-pointer"
@@ -5151,6 +5209,20 @@ Generated via Drive Partners Tacho-Scan`;
           </div>
         </div>
       )}
+
+      {/* Driver Visual Reports & Strategy Hub */}
+      <TachoVisualReportsHub
+        isOpen={isVisualReportsHubOpen}
+        onClose={() => setIsVisualReportsHubOpen(false)}
+        importedDays={importedDays}
+        driverLicenceProfile={driverLicenceProfile}
+        activeDayKey={selectedDayKey}
+        onSelectDay={(k) => {
+          setSelectedDayKey(k);
+          setView('DAY_DETAIL');
+        }}
+        showToast={showToast}
+      />
     </div>
   );
 };
