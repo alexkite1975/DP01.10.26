@@ -48,7 +48,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     {
       id: 'TIMESHEETS' as MobileTabId,
       label: 'Timesheets',
-      subtitle: 'Demurrage',
+      subtitle: 'Hours & Pay',
       icon: Receipt,
       badge: null
     },

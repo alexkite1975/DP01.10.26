@@ -334,7 +334,7 @@ export const DriverSafetyShieldHub: React.FC<DriverSafetyShieldHubProps> = ({
           }`}
         >
           <span>⏱️</span>
-          <span>Demurrage Timer (£45/h)</span>
+          <span>Separate Tool: Demurrage (£45/h)</span>
         </button>
 
         <button
@@ -1232,10 +1232,11 @@ export const DriverSafetyShieldHub: React.FC<DriverSafetyShieldHubProps> = ({
                   Automated geofenced detention clock. Recovers lost earnings when warehouses exceed the 2-hour loading window.
                 </p>
               </div>
+            </div>
 
-              <span className="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-500/40">
-                RHA / FTA SOP-OPS-014 Standard
-              </span>
+            <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-400 font-mono flex items-center gap-2">
+              <span className="text-amber-400 font-bold">ℹ️ Segregated Item:</span>
+              <span>This delay claim tool is kept separate as it is not relevant for all drivers—only sub-contractors and owner-drivers billing site detention fees.</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

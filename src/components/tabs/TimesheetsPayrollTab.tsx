@@ -78,7 +78,9 @@ export const TimesheetsPayrollTab: React.FC<TimesheetsPayrollTabProps> = ({
     }
   ];
 
-  const totalWeeklyGross = shifts.reduce((acc, s) => acc + s.grossEarnings, 0) + 120.75;
+  const baseWeeklyGross = shifts.reduce((acc, s) => acc + s.grossEarnings, 0);
+  const demurrageClaimsTotal = 120.75;
+  const [showDemurrageSection, setShowDemurrageSection] = useState(false);
 
   return (
     <div className="space-y-4 pb-24 text-slate-100">
@@ -87,13 +89,13 @@ export const TimesheetsPayrollTab: React.FC<TimesheetsPayrollTabProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <span className="text-slate-400 text-xs font-mono uppercase tracking-wider block">
-              Available For Fast-Pay Cashout
+              Base Weekly Timesheet Earnings
             </span>
             <div className="text-2xl font-black text-emerald-400 font-mono mt-0.5">
-              £{totalWeeklyGross.toFixed(2)}
+              £{baseWeeklyGross.toFixed(2)}
             </div>
             <span className="text-[11px] text-slate-400 mt-1 block">
-              Includes £120.75 automated demurrage & detention claims
+              Verified against GPS on-site checkpoints &amp; tacho records
             </span>
           </div>
 
@@ -119,28 +121,54 @@ export const TimesheetsPayrollTab: React.FC<TimesheetsPayrollTabProps> = ({
         )}
       </div>
 
-      {/* 2. Automated Demurrage & Detention Snapshot Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-            <Clock className="w-5 h-5" />
+      {/* 2. Segregated Demurrage & Detention Banner (Kept as a Separate Item) */}
+      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 shadow-sm space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center font-bold">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-white">
+                  Separate Item: DC Demurrage &amp; Waiting Delay Tracker
+                </span>
+                <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                  Optional
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-400">
+                Only relevant for sub-contractors / drivers billing £45/hr bay waiting delays
+              </p>
+            </div>
           </div>
-          <div>
-            <span className="text-xs font-bold text-white block">
-              Automated Demurrage Engine (£45/hr)
-            </span>
-            <span className="text-[11px] text-slate-400">
-              GPS geofence tracks depot dwell time & bills shipper automatically.
-            </span>
-          </div>
+
+          <button
+            onClick={() => setShowDemurrageSection(!showDemurrageSection)}
+            className="text-xs font-mono font-bold px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-lg transition-colors border border-slate-700"
+          >
+            {showDemurrageSection ? 'Hide' : 'Show Details'}
+          </button>
         </div>
 
-        <button
-          onClick={onOpenDemurrageLedgerModal}
-          className="text-xs font-bold px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl transition-colors flex items-center gap-1"
-        >
-          View Ledger <ChevronRight className="w-3.5 h-3.5" />
-        </button>
+        {showDemurrageSection && (
+          <div className="pt-2 border-t border-slate-800/80 space-y-2 animate-in fade-in duration-150">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="text-slate-400">Accrued Site Demurrage:</span>
+              <strong className="text-amber-400 font-bold">+£{demurrageClaimsTotal.toFixed(2)}</strong>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              GPS geofence tracks bay detention beyond free 2-hour window and generates an official RHA-standard evidence pack.
+            </p>
+            <button
+              onClick={onOpenDemurrageLedgerModal}
+              className="w-full text-xs font-bold py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 rounded-xl transition-colors border border-amber-500/30 flex items-center justify-center gap-1.5"
+            >
+              <span>Open Demurrage Claim Ledger</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 3. Daily Geofence & Timesheet Ledger */}
