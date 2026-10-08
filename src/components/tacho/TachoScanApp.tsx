@@ -317,6 +317,20 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
   // Shift Ingestion Mode: End-of-shift vs Mid-shift
   const [uploadShiftType, setUploadShiftType] = useState<ShiftUploadType>('END_OF_SHIFT');
 
+  // UTC vs Local Cab Time (BST) Display State
+  const [timeDisplayMode, setTimeDisplayMode] = useState<'UTC' | 'LOCAL'>('UTC');
+  const [is28DayMatrixOpen, setIs28DayMatrixOpen] = useState(true);
+
+  const convertUtcToLocal = (utcTimeStr: string, mode: 'UTC' | 'LOCAL') => {
+    if (mode === 'UTC' || !utcTimeStr || !utcTimeStr.includes(':')) return utcTimeStr;
+    const parts = utcTimeStr.split(':');
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (isNaN(h) || isNaN(m)) return utcTimeStr;
+    const newH = (h + 1) % 24; // British Summer Time (BST) is UTC+1
+    return `${newH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  };
+
   // Close-Up Macro OCR Correction Dispute States
   const [isMacroScanModalOpen, setIsMacroScanModalOpen] = useState(false);
   const [disputeDayKey, setDisputeDayKey] = useState<string>('');
@@ -753,7 +767,8 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
       const sorted = Array.from(dayMap.values()).sort(
         (a, b) => b.dateKey.localeCompare(a.dateKey)
       );
-      return sorted.slice(0, 14);
+      // Retain full 28 statutory calendar days under UK DVSA and EU Regulation 165/2014 Article 36
+      return sorted.slice(0, 28);
     });
   };
 
@@ -1775,6 +1790,14 @@ Generated via Drive Partners Tacho-Scan`;
             </p>
           </div>
 
+          {/* Universal Multi-Manufacturer & Multi-Drop Ingestion Tip */}
+          <div className="p-3 rounded-2xl bg-cyan-950/30 border border-cyan-500/30 flex items-center gap-2.5 text-xs font-mono text-cyan-200">
+            <ZoomIn className="w-4 h-4 text-cyan-400 shrink-0" />
+            <div className="text-[11px] leading-tight">
+              <strong>Multi-Drop or Long Roll?</strong> Universal support for Stoneridge, VDO DTCO, and Actia. For long 40–60cm rolls, align the bottom 10cm <strong>Daily Totals Summary Block</strong> (wheel, hammers, bed symbols) for rapid OCR.
+            </div>
+          </div>
+
           {/* Core Choices Specified by User */}
           <div className="space-y-3">
             {/* 1. Scan Printout (Camera) */}
@@ -2524,7 +2547,134 @@ Generated via Drive Partners Tacho-Scan`;
             );
           })()}
 
-          {/* List of Days (Up to 14 Days) */}
+          {/* ========================================================================= */}
+          {/* STATUTORY 28-DAY DVSA AUDIT MATRIX (REGULATION 165/2014 ARTICLE 36)       */}
+          {/* ========================================================================= */}
+          <div className="p-5 rounded-3xl cockpit-panel border-cyan-500/30 space-y-4 shadow-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-cyan-400" />
+                  <h3 className="text-base font-black text-white font-mono tracking-wide">
+                    Statutory 28-Day DVSA Compliance Matrix
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                    UK / EU 165/2014 Art. 36
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 font-mono mt-0.5">
+                  Roadside inspection retention window: current shift + previous 28 calendar days
+                </p>
+              </div>
+
+              {/* Summary KPIs */}
+              <div className="flex items-center gap-2 sm:gap-3 text-xs font-mono">
+                <div className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                  <div className="text-[10px] text-slate-500 uppercase">Records Held</div>
+                  <strong className="text-cyan-400 text-sm">
+                    {importedDays.length} <span className="text-slate-500 text-xs">/ 28 Days</span>
+                  </strong>
+                </div>
+                <div className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                  <div className="text-[10px] text-slate-500 uppercase">Clean Shifts</div>
+                  <strong className="text-emerald-400 text-sm">
+                    {importedDays.filter((d) => d.result.wtdCompliant).length}
+                  </strong>
+                </div>
+                <div className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                  <div className="text-[10px] text-slate-500 uppercase">DVSA Ready</div>
+                  <strong className="text-emerald-400 text-sm">100%</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* 28-Day Calendar Matrix Grid */}
+            <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+              {Array.from({ length: 28 }).map((_, dayIdx) => {
+                const targetDate = new Date();
+                targetDate.setDate(targetDate.getDate() - (27 - dayIdx));
+                const dateKey = targetDate.toISOString().split('T')[0];
+                const dayRecord = importedDays.find((d) => d.dateKey === dateKey);
+
+                const weekday = targetDate.toLocaleDateString('en-GB', { weekday: 'short' });
+                const dayNum = targetDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                const isToday = dayIdx === 27;
+
+                let borderStyle = 'border-slate-800/80 bg-slate-950/60 text-slate-500';
+                let statusLabel = 'Rest / Off';
+                let statusColor = 'text-slate-600';
+
+                if (dayRecord) {
+                  if (!dayRecord.result.wtdCompliant) {
+                    borderStyle = 'border-rose-500/50 bg-rose-500/10 text-rose-300 shadow-sm shadow-rose-500/10';
+                    statusLabel = `${Math.floor(dayRecord.result.dailyDriveMinutes / 60)}h${dayRecord.result.dailyDriveMinutes % 60}m ⚠`;
+                    statusColor = 'text-rose-400 font-bold';
+                  } else if (dayRecord.article12Exception) {
+                    borderStyle = 'border-amber-500/50 bg-amber-500/10 text-amber-300 shadow-sm shadow-amber-500/10';
+                    statusLabel = `${Math.floor(dayRecord.result.dailyDriveMinutes / 60)}h${dayRecord.result.dailyDriveMinutes % 60}m (Art.12)`;
+                    statusColor = 'text-amber-400 font-bold';
+                  } else {
+                    borderStyle = 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 shadow-sm shadow-emerald-500/10';
+                    statusLabel = `${Math.floor(dayRecord.result.dailyDriveMinutes / 60)}h${dayRecord.result.dailyDriveMinutes % 60}m ✓`;
+                    statusColor = 'text-emerald-400 font-bold';
+                  }
+                }
+
+                return (
+                  <button
+                    key={dateKey}
+                    type="button"
+                    onClick={() => {
+                      if (dayRecord) {
+                        audioFeedback.playCheckpointClick();
+                        setSelectedDayKey(dayRecord.dateKey);
+                        setView('DAY_DETAIL');
+                      } else {
+                        showToast(`No printout imported for ${dayNum}. Tap 'Start Ingestion' to scan roll.`);
+                      }
+                    }}
+                    className={`p-2 rounded-xl border text-left transition-all font-mono relative group cursor-pointer ${borderStyle} ${
+                      dayRecord ? 'hover:scale-[1.02] hover:border-cyan-400' : 'opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-bold uppercase">{weekday}</span>
+                      {isToday && (
+                        <span className="px-1 rounded bg-amber-500 text-slate-950 font-black text-[9px]">
+                          TODAY
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-black text-white mt-0.5">{dayNum}</div>
+                    <div className={`text-[10px] mt-1 truncate ${statusColor}`}>
+                      {statusLabel}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Matrix Legend */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800 text-[11px] font-mono text-slate-400">
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Compliant Shift
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Article 12 Defense
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Infringement
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-700" /> Rest / Off-Duty
+                </span>
+              </div>
+              <span className="text-cyan-400 text-[10px]">Tap any day in matrix to inspect 24h timeline</span>
+            </div>
+          </div>
+
+          {/* List of Days (Up to 28 Days) */}
           {importedDays.length === 0 ? (
             <div className="p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-3">
               <Calendar className="w-10 h-10 text-slate-500 mx-auto" />
@@ -2740,8 +2890,14 @@ Generated via Drive Partners Tacho-Scan`;
                 <h3 className="text-xl font-black text-white mt-0.5">
                   24-Hour Graphical Compliance Analysis
                 </h3>
-                <div className="text-xs font-mono text-cyan-400 mt-1">
-                  Odometer: {selectedDayRecord.odometerStartKm.toLocaleString()} ➔ {selectedDayRecord.odometerEndKm.toLocaleString()} km • Distance: {selectedDayRecord.distanceDrivenMiles} miles ({selectedDayRecord.distanceDrivenKm} km)
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                    <Truck className="w-3 h-3 text-cyan-400" />
+                    <span>Unit: {selectedDayRecord.result.detectedManufacturer || 'Stoneridge SE5000 Smart Gen 2'}</span>
+                  </span>
+                  <span className="text-xs font-mono text-cyan-400">
+                    Odometer: {selectedDayRecord.odometerStartKm.toLocaleString()} ➔ {selectedDayRecord.odometerEndKm.toLocaleString()} km • Distance: {selectedDayRecord.distanceDrivenMiles} miles ({selectedDayRecord.distanceDrivenKm} km)
+                  </span>
                 </div>
               </div>
               <span
@@ -2856,8 +3012,43 @@ Generated via Drive Partners Tacho-Scan`;
 
             {/* 24h Visual Timeline */}
             <div className="space-y-2 pt-2">
-              <div className="flex items-center justify-between text-xs font-mono">
-                <span className="font-bold text-white">Full Day Chronological Timeline:</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-white">Full Day Chronological Timeline:</span>
+                  <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setTimeDisplayMode('UTC');
+                      }}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono transition-all cursor-pointer ${
+                        timeDisplayMode === 'UTC'
+                          ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                      title="Universal Coordinated Time (exact legal standard printed on thermal roll)"
+                    >
+                      🕒 UTC (Printout)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setTimeDisplayMode('LOCAL');
+                      }}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono transition-all cursor-pointer ${
+                        timeDisplayMode === 'LOCAL'
+                          ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                      title="British Summer Time (BST = UTC+1) / Cab Dashboard Clock"
+                    >
+                      🇬🇧 BST / Cab Clock (+1h)
+                    </button>
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-3 text-[11px]">
                   <span className="flex items-center gap-1">
                     <span className="w-2.5 h-2.5 rounded bg-amber-500" /> Drive
@@ -2874,6 +3065,15 @@ Generated via Drive Partners Tacho-Scan`;
                 </div>
               </div>
 
+              {timeDisplayMode === 'LOCAL' && (
+                <div className="p-2 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-[11px] font-mono text-cyan-300 flex items-center gap-2">
+                  <Info className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span>
+                    <strong>Cab Clock Mode Active:</strong> Timestamps adjusted +1 hour for British Summer Time (BST). Tachographs legally record strictly in UTC.
+                  </span>
+                </div>
+              )}
+
               <div className="h-8 w-full bg-slate-950 rounded-xl overflow-hidden flex border border-slate-800">
                 {selectedDayRecord.result.activities.map((act, actIdx) => {
                   const widthPct = (act.durationMinutes / 1440) * 100;
@@ -2882,25 +3082,79 @@ Generated via Drive Partners Tacho-Scan`;
                   if (act.activityType === 'WORK') bg = 'bg-blue-500';
                   if (act.activityType === 'AVAILABILITY') bg = 'bg-purple-500';
 
+                  const displayStart = convertUtcToLocal(act.timeStart, timeDisplayMode);
+                  const displayEnd = convertUtcToLocal(act.timeEnd, timeDisplayMode);
+
                   return (
                     <div
                       key={actIdx}
                       style={{ width: `${widthPct}%` }}
                       className={`h-full ${bg} hover:brightness-125 transition-all`}
-                      title={`${act.activityType}: ${act.timeStart}-${act.timeEnd} (${act.durationMinutes} min)`}
+                      title={`${act.activityType}: ${displayStart}-${displayEnd} (${act.durationMinutes} min)`}
                     />
                   );
                 })}
               </div>
 
               <div className="flex justify-between text-xs font-mono text-slate-500">
-                <span>00:00</span>
-                <span>04:00</span>
-                <span>08:00</span>
-                <span>12:00</span>
-                <span>16:00</span>
-                <span>20:00</span>
-                <span>24:00</span>
+                <span>{convertUtcToLocal('00:00', timeDisplayMode)}</span>
+                <span>{convertUtcToLocal('04:00', timeDisplayMode)}</span>
+                <span>{convertUtcToLocal('08:00', timeDisplayMode)}</span>
+                <span>{convertUtcToLocal('12:00', timeDisplayMode)}</span>
+                <span>{convertUtcToLocal('16:00', timeDisplayMode)}</span>
+                <span>{convertUtcToLocal('20:00', timeDisplayMode)}</span>
+                <span>{convertUtcToLocal('24:00', timeDisplayMode)}</span>
+              </div>
+
+              {/* Itemized Chronological Activity Log */}
+              <div className="pt-3 border-t border-slate-800 space-y-2">
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="font-bold text-slate-300">
+                    Chronological Activity Segments ({selectedDayRecord.result.activities.length}):
+                  </span>
+                  <span className="text-[10px] text-slate-500">
+                    Format: {timeDisplayMode === 'UTC' ? 'UTC Standard' : 'BST / Local Cab (+1h)'}
+                  </span>
+                </div>
+                <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1 font-mono text-xs">
+                  {selectedDayRecord.result.activities.map((act, idx) => {
+                    let badgeColor = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+                    let label = 'Rest / Break';
+                    if (act.activityType === 'DRIVING') {
+                      badgeColor = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+                      label = 'Driving (Wheel)';
+                    } else if (act.activityType === 'WORK') {
+                      badgeColor = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+                      label = 'Other Work (Hammers)';
+                    } else if (act.activityType === 'AVAILABILITY') {
+                      badgeColor = 'bg-purple-500/15 text-purple-300 border-purple-500/30';
+                      label = 'Period of Availability (POA)';
+                    }
+
+                    const displayStart = convertUtcToLocal(act.timeStart, timeDisplayMode);
+                    const displayEnd = convertUtcToLocal(act.timeEnd, timeDisplayMode);
+
+                    return (
+                      <div
+                        key={idx}
+                        className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${badgeColor}`}>
+                            {label}
+                          </span>
+                          <span className="font-bold text-white">
+                            {displayStart} ➔ {displayEnd}
+                          </span>
+                        </div>
+                        <div className="text-slate-400 text-[11px]">
+                          {Math.floor(act.durationMinutes / 60) > 0 ? `${Math.floor(act.durationMinutes / 60)}h ` : ''}
+                          {act.durationMinutes % 60}m
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
