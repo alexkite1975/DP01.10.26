@@ -42,20 +42,20 @@ interface TachoScanMarketingVideoProps {
 export const TOTAL_VIDEO_DURATION = 70;
 
 export const CHAPTER_TIMESTAMPS = {
-  1: { start: 0, end: 15, title: '1. Account Setup', sub: 'Verification Trinity' },
+  1: { start: 0, end: 15, title: '1. Quick Registration', sub: 'Just Licence Type' },
   2: { start: 15, end: 30, title: '2. Tacho Ingestion', sub: 'Scan & Card Reader' },
   3: { start: 30, end: 46, title: '3. Current Shift', sub: 'HUD & 24h Ribbon' },
   4: { start: 46, end: 60, title: '4. Future Shifts', sub: 'Availability & Bank' },
   5: { start: 60, end: 70, title: '5. Get Started', sub: 'Launch & Drive' }
 };
 
-// British Female Voiceover Script
+// Natural Conversational British Female Voiceover Script
 export const VOICEOVER_SCRIPTS: Record<number, string> = {
-  1: "Welcome to DrivePartners. Setting up your account takes under two minutes with our Verification Trinity. First, scan your DVLA photocard licence to verify your identity and heavy goods entitlement. Next, scan your Smart Tachograph Card and Driver CPC card to confirm your periodic hours. Finally, choose your preferred in-cab language and apply your digital signature to generate your official DVSA Digital Passport.",
-  2: "Ingesting your shift is effortless with two fast options. Simply hold your phone camera over your printed daily tachograph roll. Our neural scanner instantly reads Stoneridge and VDO printouts, even in dim cab lighting. Alternatively, connect any standard USB or Bluetooth card reader of your choice to download your digital card directly into the app.",
-  3: "Once ingested, your Active Cockpit HUD displays the three golden numbers: your remaining daily drive, your continuous driving countdown, and your earliest legal start time after eleven hours of rest. You can inspect an interactive minute-by-minute activity trace, view fatigue recovery scores, or tap once to copy a clean shift summary straight into WhatsApp for dispatch.",
-  4: "For future shifts, Tacho-Scan acts as your strategic co-pilot. Your Flexibility Bank tracks your remaining ten-hour driving extensions and reduced daily rests. The Predictive Shift Clearance Clock forecasts your exact legal availability for upcoming shifts, while protecting your fifty-six hour weekly cap and generating a twenty-eight day roadside clean shield for enforcement officers.",
-  5: "Everything you need to protect your licence, prove your earnings, and streamline your driving day. Create your account now to unlock your digital passport and launch Tacho-Scan."
+  1: "Hi there, and welcome to DrivePartners! Getting started is genuinely quick and simple. All you need to do is choose your licence category — whether that's Class 1 artic, Class 2 rigid, or seven-and-a-half tonne — pop in your contact details, and you're immediately in. No endless forms, and no unnecessary paperwork.",
+  2: "When it comes to logging your shift, it couldn't be easier. Just hold your phone camera over your daily tachograph roll, and our smart scanner reads it in a flash — even in dim cab lighting. Or, if you prefer, simply plug in your favourite card reader to download your driver card directly.",
+  3: "As soon as your shift is in, your cockpit displays your three golden numbers right at the top: how much driving time you've got left, your continuous driving countdown, and the exact time you can legally head out tomorrow. Plus, you can copy a clean shift summary straight into WhatsApp for dispatch with just one tap.",
+  4: "Planning ahead? Tacho-Scan acts as your strategic co-pilot. Your flexibility bank keeps track of your ten-hour driving extensions and reduced daily rests, while the predictive clearance clock shows exactly when you're legal for upcoming work — completely protecting your weekly driving hours and your licence.",
+  5: "It's clean, simple, and built by drivers, for drivers. Choose your licence type today, claim your early access beta pass, and take the stress out of your shifts."
 };
 
 export const TachoScanMarketingVideo: React.FC<TachoScanMarketingVideoProps> = ({
@@ -83,7 +83,7 @@ export const TachoScanMarketingVideo: React.FC<TachoScanMarketingVideoProps> = (
       ? 4
       : 5;
 
-  // British Female Voiceover Synthesis using Web Speech API
+  // Natural Conversational British Female Voiceover Synthesis using Web Speech API
   const speakBritishVoiceover = (sceneNum: number) => {
     if (!isVoiceoverEnabled || isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
       return;
@@ -96,37 +96,46 @@ export const TachoScanMarketingVideo: React.FC<TachoScanMarketingVideoProps> = (
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'en-GB';
-      utterance.rate = 0.96;
-      utterance.pitch = 1.15; // Pleasant, warm British female pitch
+      // Natural conversational cadence: unhurried, warm tone
+      utterance.rate = 0.94;
+      utterance.pitch = 1.0; // Completely natural human pitch (no robotic distortion)
       utterance.volume = 1.0;
 
       const voices = window.speechSynthesis.getVoices();
 
-      // Prioritize British female voices (Hazel, Serena, Victoria, Google UK English Female, etc.)
-      const britishFemaleVoice =
+      // Prioritize natural/neural British female voices first:
+      const naturalUkFemaleVoice =
         voices.find(
           (v) =>
             (v.lang === 'en-GB' || v.lang.includes('GB') || v.lang.startsWith('en_GB')) &&
-            (v.name.toLowerCase().includes('female') ||
-              v.name.toLowerCase().includes('hazel') ||
-              v.name.toLowerCase().includes('serena') ||
-              v.name.toLowerCase().includes('victoria') ||
-              v.name.toLowerCase().includes('fiona') ||
-              v.name.toLowerCase().includes('libby') ||
-              v.name.toLowerCase().includes('sonia') ||
-              v.name.toLowerCase().includes('kate') ||
-              v.name.toLowerCase().includes('martha') ||
-              v.name.toLowerCase().includes('susan') ||
-              v.name.toLowerCase().includes('google uk english female') ||
-              v.name.toLowerCase().includes('natural'))
+            (v.name.toLowerCase().includes('natural') || v.name.toLowerCase().includes('neural') || v.name.toLowerCase().includes('online')) &&
+            !v.name.toLowerCase().includes('male')
         ) ||
+        voices.find(
+          (v) =>
+            (v.lang === 'en-GB' || v.lang.includes('GB') || v.lang.startsWith('en_GB')) &&
+            (v.name.toLowerCase().includes('libby') ||
+              v.name.toLowerCase().includes('sonia') ||
+              v.name.toLowerCase().includes('maisie') ||
+              v.name.toLowerCase().includes('hazel') ||
+              v.name.toLowerCase().includes('victoria') ||
+              v.name.toLowerCase().includes('serena') ||
+              v.name.toLowerCase().includes('kate') ||
+              v.name.toLowerCase().includes('martha'))
+        ) ||
+        voices.find(
+          (v) =>
+            (v.lang === 'en-GB' || v.lang.includes('GB') || v.lang.startsWith('en_GB')) &&
+            v.name.toLowerCase().includes('female')
+        ) ||
+        voices.find((v) => v.name.toLowerCase().includes('google uk english female')) ||
         voices.find((v) => (v.lang === 'en-GB' || v.lang.includes('GB')) && !v.name.toLowerCase().includes('male')) ||
         voices.find((v) => v.lang === 'en-GB' || v.lang.includes('GB')) ||
         voices.find((v) => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) ||
         voices.find((v) => v.lang.startsWith('en'));
 
-      if (britishFemaleVoice) {
-        utterance.voice = britishFemaleVoice;
+      if (naturalUkFemaleVoice) {
+        utterance.voice = naturalUkFemaleVoice;
       }
 
       setIsSpeaking(true);
@@ -388,94 +397,81 @@ export const TachoScanMarketingVideo: React.FC<TachoScanMarketingVideoProps> = (
         </div>
 
         {/* ================================================================= */}
-        {/* CHAPTER 1: ACCOUNT SETUP & VERIFICATION TRINITY (00:00 - 00:15)    */}
+        {/* CHAPTER 1: QUICK REGISTRATION & LICENCE TYPE (00:00 - 00:15)      */}
         {/* ================================================================= */}
         {currentScene === 1 && (
           <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-between items-center text-center animate-in fade-in duration-300">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold mt-2">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>PHASE 1 • THE VERIFICATION TRINITY</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold mt-2">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span>STEP 1 • QUICK REGISTRATION • JUST YOUR LICENCE TYPE</span>
             </div>
 
-            {/* Visual: 3 Cards + Language + Passport */}
-            <div className="w-full max-w-xl grid grid-cols-1 sm:grid-cols-3 gap-2.5 font-mono text-left">
-              {/* Card 1: Photocard Licence */}
-              <div className="p-3 rounded-2xl bg-slate-900/90 border border-emerald-500/40 space-y-1.5 shadow-lg">
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-slate-400 flex items-center gap-1">
-                    <CreditCard className="w-3 h-3 text-emerald-400" />
-                    <span>CARD 1: LICENCE</span>
-                  </span>
-                  <span className="text-emerald-400 font-bold">✓ SCANNED</span>
+            {/* Clean, Zero-Friction Pre-Registration Mockup */}
+            <div className="w-full max-w-xl bg-slate-900/90 border border-slate-700/80 rounded-2xl p-4 sm:p-5 shadow-2xl backdrop-blur-md space-y-3.5 text-left font-mono">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span className="text-xs text-white font-bold flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-cyan-400" />
+                  <span>Choose Your Driving Entitlement</span>
+                </span>
+                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
+                  ✓ NO PAPERWORK
+                </span>
+              </div>
+
+              {/* 4 Clean Licence Category Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                <div className="p-2.5 rounded-xl bg-cyan-950/80 border-2 border-cyan-400 text-white shadow-lg shadow-cyan-500/20 flex flex-col items-center justify-center gap-1 transition">
+                  <Check className="w-4 h-4 text-cyan-300" />
+                  <span className="font-bold text-[11px]">Class 1 (C+E)</span>
+                  <span className="text-[9px] text-cyan-300">Articulated 44t</span>
                 </div>
-                <div className="bg-slate-950 p-2 rounded-xl text-[10px] space-y-0.5">
-                  <div className="text-white font-bold">Alexander James Kite</div>
-                  <div className="text-emerald-400">KITE9707185AJ9ZM</div>
-                  <div className="text-cyan-300">Class 1 (C+E) 44t</div>
-                  <div className="text-slate-400 text-[9px]">0 Points • Clean</div>
+                <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-400 flex flex-col items-center justify-center gap-1 opacity-70">
+                  <span className="w-4 h-4 rounded-full border border-slate-700 text-[10px] flex items-center justify-center">2</span>
+                  <span className="font-bold text-[11px]">Class 2</span>
+                  <span className="text-[9px] text-slate-500">Rigid Cat C</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-400 flex flex-col items-center justify-center gap-1 opacity-70">
+                  <span className="w-4 h-4 rounded-full border border-slate-700 text-[10px] flex items-center justify-center">3</span>
+                  <span className="font-bold text-[11px]">7.5 Tonne</span>
+                  <span className="text-[9px] text-slate-500">Cat C1</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-400 flex flex-col items-center justify-center gap-1 opacity-70">
+                  <span className="w-4 h-4 rounded-full border border-slate-700 text-[10px] flex items-center justify-center">4</span>
+                  <span className="font-bold text-[11px]">PSV / Coach</span>
+                  <span className="text-[9px] text-slate-500">Cat D</span>
                 </div>
               </div>
 
-              {/* Card 2: Smart Tacho & CPC */}
-              <div className="p-3 rounded-2xl bg-slate-900/90 border border-cyan-500/40 space-y-1.5 shadow-lg">
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-cyan-400 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-cyan-400" />
-                    <span>CARDS 2 &amp; 3: TACHO/CPC</span>
-                  </span>
-                  <span className="text-cyan-300 font-bold">✓ BOUND</span>
+              {/* Quick Driver Profile Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div className="p-2 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                  <span className="text-slate-400">Driver:</span>
+                  <span className="text-white font-bold">Alexander James Kite</span>
                 </div>
-                <div className="bg-slate-950 p-2 rounded-xl text-[10px] space-y-0.5">
-                  <div className="text-cyan-300 font-bold">DB25029078179500</div>
-                  <div className="text-[9px] text-slate-400">Gen 2 Chip Bound</div>
-                  <div className="text-amber-300 font-bold">DQC: 35/35 Hours</div>
-                  <div className="text-emerald-400 text-[9px]">Expires 10 Sep 2029</div>
+                <div className="p-2 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                  <span className="text-slate-400">Mobile:</span>
+                  <span className="text-cyan-300 font-bold">+44 7700 900123</span>
                 </div>
               </div>
 
-              {/* Step 3: Language & D906 Sign */}
-              <div className="p-3 rounded-2xl bg-slate-900/90 border border-purple-500/40 space-y-1.5 shadow-lg">
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-purple-300 flex items-center gap-1">
-                    <Globe className="w-3 h-3 text-purple-400" />
-                    <span>IN-CAB CO-PILOT</span>
-                  </span>
-                  <span className="text-purple-400 font-bold">✓ D906</span>
-                </div>
-                <div className="bg-slate-950 p-2 rounded-xl text-[10px] space-y-1">
-                  <div className="flex items-center gap-1 text-[11px]">
-                    <span>🇬🇧</span>
-                    <span>🇵🇱</span>
-                    <span>🇷🇴</span>
-                    <span>🇱🇹</span>
-                    <span>🇧🇬</span>
-                    <span>🇪🇸</span>
-                  </div>
-                  <div className="text-[9px] text-slate-400">Native In-Cab Coaching</div>
-                  <div className="text-[10px] font-serif italic text-emerald-400 border-t border-slate-800 pt-1">
-                    Alexander J. Kite
-                  </div>
-                </div>
+              {/* Instant Priority Beta Pass Issued */}
+              <div className="p-2.5 rounded-xl bg-emerald-950/50 border border-emerald-500/30 flex items-center justify-between text-xs">
+                <span className="text-emerald-300 font-bold flex items-center gap-2">
+                  <Award className="w-4 h-4 text-emerald-400" />
+                  <span>Driver Priority Pass: DP-BETA-795</span>
+                </span>
+                <span className="text-emerald-400 font-bold text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded">
+                  QUEUE #183 • VERIFIED
+                </span>
               </div>
-            </div>
-
-            {/* Passport Banner */}
-            <div className="p-2.5 px-4 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 flex items-center justify-between max-w-xl w-full text-xs font-mono">
-              <span className="text-emerald-300 flex items-center gap-2 font-bold">
-                <Award className="w-4 h-4 text-emerald-400" />
-                <span>DVSA Digital Passport Generated</span>
-              </span>
-              <span className="text-emerald-400 font-bold text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded">
-                100% ROADSIDE AUDIT READY
-              </span>
             </div>
 
             <div className="space-y-0.5 max-w-lg mb-2">
               <h3 className="text-lg sm:text-xl font-black text-white">
-                How to Set Up Your Account in 2 Minutes
+                Simple, Instant Registration
               </h3>
               <p className="text-xs text-slate-300">
-                Scan your Driving Licence, Digi-Tacho card, and CPC. Select your native in-cab language, sign D906, and your account is live!
+                Just choose your licence category, pop in your contact details, and you're ready for Tacho-Scan.
               </p>
             </div>
           </div>

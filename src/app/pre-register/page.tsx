@@ -22,10 +22,6 @@ export default function PreRegisterPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [licenceCategory, setLicenceCategory] = useState('Class 1 (C+E / Artic)');
-  const [tachoManufacturer, setTachoManufacturer] = useState('Stoneridge SE5000 (Smart Gen 2)');
-  const [workType, setWorkType] = useState('Trunking / Hub-to-Hub');
-  const [cpcExpiryYear, setCpcExpiryYear] = useState('2028');
-  const [primaryChallenge, setPrimaryChallenge] = useState('Calculating 15h shift spread & 9h reduced rest');
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -49,11 +45,7 @@ export default function PreRegisterPage() {
           fullName,
           email,
           phone,
-          licenceCategory,
-          tachoManufacturer,
-          workType,
-          cpcExpiryYear,
-          primaryChallenge
+          licenceCategory
         })
       });
 
@@ -222,95 +214,20 @@ export default function PreRegisterPage() {
                 />
               </div>
 
-              {/* Licence Category & Tacho Model */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-slate-300 block">
-                    Licence Category
-                  </label>
-                  <select
-                    value={licenceCategory}
-                    onChange={(e) => setLicenceCategory(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
-                  >
-                    <option>Class 1 (C+E / Artic)</option>
-                    <option>Class 2 (Cat C / Rigid)</option>
-                    <option>7.5 Tonne (C1)</option>
-                    <option>PSV / Bus &amp; Coach</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-slate-300 block">
-                    Preferred Ingest Method / Hardware
-                  </label>
-                  <select
-                    value={tachoManufacturer}
-                    onChange={(e) => setTachoManufacturer(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
-                  >
-                    <option>Smart Card Reader (Any Brand - USB / Bluetooth)</option>
-                    <option>Stoneridge SE5000 (Smart Gen 2)</option>
-                    <option>Continental VDO DTCO 4.1</option>
-                    <option>Actia / SmarTach</option>
-                    <option>Both Thermal Rolls &amp; Card Reader</option>
-                    <option>Mixed Fleet / Not Sure</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Driving Pattern & CPC */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-slate-300 block">
-                    Driving Pattern
-                  </label>
-                  <select
-                    value={workType}
-                    onChange={(e) => setWorkType(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
-                  >
-                    <option>Trunking / Hub-to-Hub</option>
-                    <option>Tramping (Nights Out)</option>
-                    <option>Multi-Drop Distribution</option>
-                    <option>Agency / Relief Driver</option>
-                    <option>Owner Operator / Sub-Contractor</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-slate-300 block">
-                    Driver CPC Expiry Year
-                  </label>
-                  <select
-                    value={cpcExpiryYear}
-                    onChange={(e) => setCpcExpiryYear(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
-                  >
-                    <option>2026</option>
-                    <option>2027</option>
-                    <option>2028</option>
-                    <option>2029</option>
-                    <option>2030</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Headache */}
+              {/* Licence Category */}
               <div className="space-y-1.5">
                 <label className="text-xs font-mono text-slate-300 block">
-                  Biggest Tachograph Frustration
+                  Licence Category / Entitlement *
                 </label>
                 <select
-                  value={primaryChallenge}
-                  onChange={(e) => setPrimaryChallenge(e.target.value)}
+                  value={licenceCategory}
+                  onChange={(e) => setLicenceCategory(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
                 >
-                  <option>Calculating 15h shift spread &amp; 9h reduced rest</option>
-                  <option>28-day roadside DVSA audit compliance</option>
-                  <option>Fading thermal printout rolls losing text</option>
-                  <option>Accidental 4.5hr driving infringements</option>
-                  <option>Unfair transport office deductions or disputes</option>
+                  <option>Class 1 (C+E / Artic)</option>
+                  <option>Class 2 (Cat C / Rigid)</option>
+                  <option>7.5 Tonne (C1)</option>
+                  <option>PSV / Bus &amp; Coach</option>
                 </select>
               </div>
 
