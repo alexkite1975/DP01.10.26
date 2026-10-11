@@ -27,7 +27,10 @@ import {
   Award,
   ChevronLeft,
   Layers,
-  MapPin
+  MapPin,
+  Volume2,
+  VolumeX,
+  MessageSquare
 } from 'lucide-react';
 import { TachographDayRecord } from './TachoScanApp';
 import { DriverLicenceProfile } from '@/types';
@@ -180,31 +183,80 @@ export const TachoVisualReportsHub: React.FC<TachoVisualReportsHubProps> = ({
     return `${act.activityType}: ${fmtMins(act.durationMinutes)}`;
   };
 
-  // Copy shift summary to clipboard
+  // AI Voice debrief state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const speakShiftDebrief = () => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const driveH = Math.floor(driveMinutes / 60);
+    const driveM = driveMinutes % 60;
+    const finishTime = activities[activities.length - 2]?.timeEnd || '17:26';
+    const [fh, fm] = finishTime.split(':').map(Number);
+    const nextH = (fh + 11) % 24;
+    const nextTimeStr = `${String(nextH).padStart(2, '0')}:${String(fm || 0).padStart(2, '0')}`;
+    const firstName = driverName.split(' ')[0] || 'Driver';
+
+    const script = dayRecord.shiftType === 'MID_SHIFT'
+      ? `Hi ${firstName}, here is your mid-shift progress. You have completed ${driveH} hours and ${driveM} minutes behind the wheel so far today. Monitor your break countdown. Drive safely!`
+      : `Good evening ${firstName}. You completed a solid shift on ${dayRecord.displayDate}, with ${driveH} hours and ${driveM} minutes of driving recorded. Your shift concluded at ${finishTime} UTC. Your full eleven-hour daily rest will clear tomorrow morning at ${nextTimeStr} UTC. Your licence record remains completely clean with zero infringements. Have a restful night!`;
+
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(script);
+      utterance.rate = 0.94;
+      utterance.pitch = 1.0;
+      utterance.lang = 'en-GB';
+
+      const voices = window.speechSynthesis.getVoices();
+      const naturalVoice = voices.find(
+        (v) =>
+          (v.name.includes('Online (Natural)') ||
+            v.name.includes('Neural') ||
+            v.name.includes('Natural') ||
+            v.name.includes('Libby') ||
+            v.name.includes('Sonia') ||
+            v.name.includes('Maisie') ||
+            v.name.includes('Google UK English Female') ||
+            v.name.includes('Victoria') ||
+            v.name.includes('Serena')) &&
+          (v.lang.startsWith('en-GB') || v.lang.startsWith('en'))
+      );
+      if (naturalVoice) utterance.voice = naturalVoice;
+
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+
+      setIsSpeaking(true);
+      window.speechSynthesis.speak(utterance);
+    } catch (_e) {
+      setIsSpeaking(false);
+    }
+  };
+
+  // Copy clean WhatsApp summary to clipboard
   const handleCopySummary = () => {
-    const text = `DRIVE PARTNERS TACHO-SCAN: SHIFT DUTY RECORD
-==================================================
-Driver:          ${driverName}
-Card Number:     ${driverCard}
-Licence:         ${driverLicence}
-Date:            ${dayRecord.displayDate}
-Vehicle Reg:     ${vehicleReg}
-Odometer Start:  ${dayRecord.odometerStartKm.toLocaleString()} km
-Odometer Finish: ${dayRecord.odometerEndKm.toLocaleString()} km
-Distance Driven: ${distKm} km (${distMiles} miles)
---------------------------------------------------
-Shift Start:     ${activities[1]?.timeStart || '06:16'} UTC
-Shift Finish:    ${activities[activities.length - 2]?.timeEnd || '17:26'} UTC
-Total Driving:   ${fmtMins(driveMinutes)}
-Total Work:      ${fmtMins(workMinutes)}
-Total POA:       ${fmtMins(poaMinutes)}
-Total Rest:      ${fmtMins(restMinutes)}
-Total Duty:      ${fmtMins(totalDutyMinutes)}
---------------------------------------------------
-Compliance:      100% CLEAN (0 Infringements)
-Verified via DrivePartners SmartHaul OS`;
+    const finishTime = activities[activities.length - 2]?.timeEnd || '17:26';
+    const [fh, fm] = finishTime.split(':').map(Number);
+    const nextH = (fh + 11) % 24;
+    const nextLegalFormatted = `${String(nextH).padStart(2, '0')}:${String(fm || 0).padStart(2, '0')} UTC`;
+
+    const text = `🚛 DRIVEPARTNERS SHIFT SUMMARY\n` +
+      `👤 Driver: ${driverName}\n` +
+      `📅 Date: ${dayRecord.displayDate}\n` +
+      `🚛 Unit: ${vehicleReg}\n` +
+      `⏱️ Shift: ${activities[1]?.timeStart || '06:16'} - ${finishTime} UTC\n` +
+      `🛣️ Driving: ${fmtMins(driveMinutes)} (${distMiles} mi)\n` +
+      `☕ Breaks: 45m legal break completed\n` +
+      `⏸️ Legal Next Start: Tomorrow ${nextLegalFormatted}\n` +
+      `🛡️ Status: 100% Legal (0 Infringements)`;
     navigator.clipboard.writeText(text);
-    showToast('✓ Shift summary copied to clipboard! Ready to paste into WhatsApp or email.');
+    showToast('✓ Clean WhatsApp summary copied to clipboard!');
   };
 
   return (
@@ -247,6 +299,28 @@ Verified via DrivePartners SmartHaul OS`;
                 ))}
               </select>
             )}
+
+            <button
+              onClick={speakShiftDebrief}
+              className={`px-3 py-2 rounded-xl text-xs font-mono font-bold border flex items-center gap-1.5 cursor-pointer shadow-sm transition-all ${
+                isSpeaking
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 animate-pulse'
+                  : 'bg-slate-900 hover:bg-slate-800 text-amber-300 border-amber-500/30'
+              }`}
+              title="Listen to AI shift audio debrief"
+            >
+              {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-amber-400" />}
+              <span className="hidden sm:inline">{isSpeaking ? 'Stop' : 'Listen'}</span>
+            </button>
+
+            <button
+              onClick={handleCopySummary}
+              className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-300 hover:text-emerald-200 font-bold text-xs border border-emerald-500/30 flex items-center gap-1.5 cursor-pointer shadow-sm"
+              title="Copy clean WhatsApp shift summary"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">WhatsApp</span>
+            </button>
 
             <button
               onClick={() => window.print()}

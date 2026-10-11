@@ -35,6 +35,7 @@ export const DriverPreRegisterModal: React.FC<DriverPreRegisterModalProps> = ({
     passId: string;
     queueNumber: number;
     fullName: string;
+    licenceCategory: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -63,7 +64,8 @@ export const DriverPreRegisterModal: React.FC<DriverPreRegisterModalProps> = ({
         setRegisteredData({
           passId: data.passId,
           queueNumber: data.queueNumber,
-          fullName: data.fullName
+          fullName: data.fullName,
+          licenceCategory: licenceCategory
         });
 
         // Trigger celebratory confetti
@@ -217,67 +219,97 @@ export const DriverPreRegisterModal: React.FC<DriverPreRegisterModalProps> = ({
             </form>
           </>
         ) : (
-          /* Success Screen: Priority Driver Pass */
-          <div className="text-center space-y-6 py-4 animate-in zoom-in-95 duration-300">
-            <div className="w-16 h-16 mx-auto rounded-3xl bg-emerald-500/20 border-2 border-emerald-400 text-emerald-400 flex items-center justify-center shadow-lg">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-
+          /* Success Screen: Apple/Google Wallet Digital Driver Beta Pass */
+          <div className="text-center space-y-5 py-2 animate-in zoom-in-95 duration-300">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono font-bold">
-                <Award className="w-3.5 h-3.5" />
-                <span>PRIORITY DRIVER BETA PASS RESERVED</span>
+                <Award className="w-3.5 h-3.5 text-emerald-400" />
+                <span>OFFICIAL DRIVER BETA PASS RESERVED</span>
               </div>
-              <h3 className="text-2xl font-black text-white">
-                You're on the Pioneer List, {registeredData.fullName}!
+              <h3 className="text-xl sm:text-2xl font-black text-white">
+                You're In, {registeredData.fullName}!
               </h3>
               <p className="text-xs text-slate-300 max-w-sm mx-auto font-sans">
-                Your spot in the closed pilot has been confirmed. You will receive an early invitation via SMS &amp; Email.
+                Your spot in the closed driver pilot is secured. Here is your digital wallet pass:
               </p>
             </div>
 
-            {/* Pass Card */}
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-cyan-500/40 shadow-2xl space-y-3 font-mono text-left">
-              <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                <span className="text-[11px] text-cyan-400 font-bold">DRIVEPARTNERS PILOT PASS</span>
-                <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/20 px-2 py-0.5 rounded">
-                  PRIORITY TIER 1
-                </span>
+            {/* Apple / Google Wallet Style Digital Card */}
+            <div className="relative mx-auto w-full max-w-sm rounded-3xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 border-2 border-cyan-400/50 shadow-[0_0_40px_rgba(6,182,212,0.18)] p-5 text-left font-mono space-y-4 overflow-hidden">
+              {/* Metallic Top Accent Bar */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-400 via-cyan-400 to-indigo-500" />
+
+              {/* Pass Header */}
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 pt-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+                    <Truck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-black text-white tracking-wider">DRIVEPARTNERS</div>
+                    <div className="text-[9px] text-cyan-400">DIGITAL DRIVER PASS</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">
+                    TIER 1 VIP
+                  </span>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* Driver & Entitlement */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <div className="text-[10px] text-slate-400">PASS ID</div>
-                  <div className="text-lg text-white font-black">{registeredData.passId}</div>
+                  <div className="text-[9px] text-slate-500 uppercase tracking-wider">DRIVER NAME</div>
+                  <div className="text-sm font-bold text-white truncate">{registeredData.fullName}</div>
                 </div>
-
-                <button
-                  onClick={handleCopyPass}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-1 cursor-pointer transition"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copied ? 'Copied' : 'Copy'}</span>
-                </button>
+                <div>
+                  <div className="text-[9px] text-slate-500 uppercase tracking-wider">ENTITLEMENT</div>
+                  <div className="text-xs font-bold text-cyan-300">{registeredData.licenceCategory}</div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-[10px] border-t border-slate-800 pt-2 text-slate-300">
+              {/* Pass ID & Queue Number */}
+              <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
                 <div>
-                  <span className="text-slate-500">Waitlist Position:</span>{' '}
-                  <span className="text-cyan-300 font-bold">#{registeredData.queueNumber}</span>
+                  <div className="text-[9px] text-slate-500 uppercase">PASS CODE</div>
+                  <div className="text-base font-black text-white tracking-widest">{registeredData.passId}</div>
                 </div>
-                <div>
-                  <span className="text-slate-500">Module:</span>{' '}
-                  <span className="text-white font-bold">Tacho-Scan AI</span>
+                <div className="text-right">
+                  <div className="text-[9px] text-slate-500 uppercase">QUEUE POSITION</div>
+                  <div className="text-sm font-black text-emerald-400">#{registeredData.queueNumber}</div>
                 </div>
+              </div>
+
+              {/* Stylized Barcode / NFC Stamp */}
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                <div className="flex items-center gap-1 text-[8px] text-slate-500 tracking-widest uppercase">
+                  <span>||||||||</span>
+                  <span>|||||</span>
+                  <span>|||||||||</span>
+                  <span>||||||</span>
+                </div>
+                <span className="text-[9px] text-slate-400">TACHO-SCAN AI PILOT</span>
               </div>
             </div>
 
-            <button
-              onClick={onClose}
-              className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs font-mono transition cursor-pointer"
-            >
-              Back to Coming Soon Page
-            </button>
+            {/* Action Buttons */}
+            <div className="flex items-center justify-center gap-2 pt-1">
+              <button
+                onClick={handleCopyPass}
+                className="px-4 py-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer transition touch-press"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copied ? 'Pass Code Copied' : 'Copy Pass Code'}</span>
+              </button>
+
+              <button
+                onClick={onClose}
+                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-bold transition cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
           </div>
         )}
       </div>
