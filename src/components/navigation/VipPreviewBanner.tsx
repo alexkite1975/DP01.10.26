@@ -47,7 +47,7 @@ export const VipPreviewBanner: React.FC = () => {
       <div className="flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
         <span className="text-emerald-300 font-bold text-[11px] sm:text-xs">
-          VIP PREVIEW ACTIVE: <span className="text-white">{previewUser}</span>
+          VIP PREVIEW ACTIVE
         </span>
       </div>
 

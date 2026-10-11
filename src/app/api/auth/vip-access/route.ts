@@ -22,8 +22,7 @@ export async function POST(req: Request) {
     if (isAngie || isAlexAdmin) {
       const response = NextResponse.json({
         success: true,
-        email,
-        name: isAngie ? 'Angie Kite' : 'Alex Kite',
+        name: 'Authorized Colleague',
         role: 'colleague_preview',
         message: 'VIP Access Granted. Welcome to DrivePartners OS.'
       });
@@ -36,7 +35,7 @@ export async function POST(req: Request) {
         httpOnly: false // Allow client-side verification as well
       });
 
-      response.cookies.set('dp_preview_user', email, {
+      response.cookies.set('dp_preview_user', 'Authorized Colleague', {
         path: '/',
         maxAge: 60 * 60 * 24 * 30,
         sameSite: 'lax',

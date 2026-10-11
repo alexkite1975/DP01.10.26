@@ -53,10 +53,9 @@ export default function ComingSoonPage() {
 
   useEffect(() => {
     // Check if user already has an active VIP session in cookie or localStorage
-    const savedUser = localStorage.getItem('dp_preview_user');
     const hasAccess = document.cookie.includes('dp_preview_access=1') || localStorage.getItem('dp_preview_access') === '1';
-    if (hasAccess && savedUser) {
-      setCurrentUser(savedUser);
+    if (hasAccess) {
+      setCurrentUser('Authorized Colleague');
     }
   }, []);
 
@@ -76,10 +75,10 @@ export default function ComingSoonPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setSuccessMessage(`Welcome, ${data.name || data.email}! Unlocking platform...`);
+        setSuccessMessage('Credentials verified! Unlocking platform...');
         localStorage.setItem('dp_preview_access', '1');
-        localStorage.setItem('dp_preview_user', data.email);
-        setCurrentUser(data.email);
+        localStorage.setItem('dp_preview_user', 'Authorized Colleague');
+        setCurrentUser('Authorized Colleague');
 
         setTimeout(() => {
           setIsLoginModalOpen(false);
@@ -129,7 +128,7 @@ export default function ComingSoonPage() {
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             <span className="text-emerald-300 font-bold">
-              VIP PREVIEW ACTIVE: {currentUser}
+              VIP PREVIEW ACTIVE
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -183,8 +182,14 @@ export default function ComingSoonPage() {
 
           {/* Colleague Access Button */}
           <button
-            onClick={() => setIsLoginModalOpen(true)}
-            className="px-3 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/50 text-xs font-mono text-cyan-300 hover:text-cyan-200 flex items-center gap-1.5 transition-all shadow-sm cursor-pointer touch-press"
+            onClick={() => {
+              setEmail('');
+              setPassword('');
+              setErrorMessage('');
+              setSuccessMessage('');
+              setIsLoginModalOpen(true);
+            }}
+            className="px-3 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/50 text-xs font-mono text-cyan-300 hover:text-cyan-200 flex items-center gap-1.5 transition-all shadow-sm cursor-pointer touch-press"
           >
             <Lock className="w-3.5 h-3.5 text-cyan-400" />
             <span className="font-bold hidden sm:inline">Colleague</span> Access
@@ -390,7 +395,13 @@ export default function ComingSoonPage() {
         {/* Discreet Colleague Access Trigger */}
         <div className="text-center pt-4">
           <button
-            onClick={() => setIsLoginModalOpen(true)}
+            onClick={() => {
+              setEmail('');
+              setPassword('');
+              setErrorMessage('');
+              setSuccessMessage('');
+              setIsLoginModalOpen(true);
+            }}
             className="text-xs font-mono text-slate-500 hover:text-cyan-400 flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer"
           >
             <KeyRound className="w-3.5 h-3.5" />
@@ -457,9 +468,10 @@ export default function ComingSoonPage() {
                   type="email"
                   required
                   autoFocus
+                  autoComplete="off"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="angie.kite@me.com"
+                  placeholder="name@company.com"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400"
                 />
               </div>
