@@ -44,7 +44,8 @@ import {
   VolumeX,
   HeartPulse,
   QrCode,
-  MessageSquare
+  MessageSquare,
+  MoreHorizontal
 } from 'lucide-react';
 import {
   TachographScanResult,
@@ -356,6 +357,7 @@ export const TachoScanApp: React.FC<TachoScanAppProps> = ({
   // UTC vs Local Cab Time (BST) Display State
   const [timeDisplayMode, setTimeDisplayMode] = useState<'UTC' | 'LOCAL'>('UTC');
   const [is28DayMatrixOpen, setIs28DayMatrixOpen] = useState(true);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const convertUtcToLocal = (utcTimeStr: string, mode: 'UTC' | 'LOCAL') => {
     if (mode === 'UTC' || !utcTimeStr || !utcTimeStr.includes(':')) return utcTimeStr;
@@ -2020,8 +2022,9 @@ Generated via Drive Partners Tacho-Scan`;
       {/* 2. ACTION MENU (User: "Scan Printout, See Dashboard, Card Reader that is all")*/}
       {/* ========================================================================= */}
       {view === 'ACTION_MENU' && (
-        <main className="flex-1 flex flex-col justify-center max-w-xl mx-auto w-full p-4 sm:p-6 space-y-6">
-          <div className="flex items-center justify-between">
+        <main className="flex-1 flex flex-col justify-center max-w-xl mx-auto w-full p-4 sm:p-6 space-y-5">
+          {/* Top Bar: Back & Shift State Segmented Control */}
+          <div className="flex items-center justify-between gap-2">
             <button
               onClick={() => setView('WELCOME')}
               className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer"
@@ -2029,32 +2032,73 @@ Generated via Drive Partners Tacho-Scan`;
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
             </button>
-            <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/30">
-              Select Ingestion Mode
-            </span>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h2 className="text-2xl font-black text-white flex items-center gap-2">
-                <span>Tacho-Scan</span>
-                {effectiveLanguage !== 'EN' && (
-                  <span className="text-xs font-mono font-normal px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800">
-                    {effectiveLanguage === 'PL' && '🇵🇱 Polski'}
-                    {effectiveLanguage === 'RO' && '🇷🇴 Română'}
-                    {effectiveLanguage === 'LT' && '🇱🇹 Lietuvių'}
-                    {effectiveLanguage === 'BG' && '🇧🇬 Български'}
-                    {effectiveLanguage === 'ES' && '🇪🇸 Español'}
-                  </span>
-                )}
-              </h2>
-              <p className="text-xs text-slate-400">
-                Driver: <span className="text-white font-bold">{effectiveDriverName}</span> • Card: <span className="text-cyan-400 font-mono">{effectiveCardNumber}</span>
-              </p>
+            {/* Compact Shift Type Selector */}
+            <div className="bg-slate-900/90 p-1 rounded-xl border border-slate-800 flex items-center gap-1 text-[11px] font-medium">
+              <span className="text-[10px] text-slate-500 font-mono pl-1.5 pr-0.5">Mode:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setUploadShiftType('END_OF_SHIFT');
+                }}
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  uploadShiftType === 'END_OF_SHIFT'
+                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Authoritative daily record"
+              >
+                End of Shift
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setUploadShiftType('MID_SHIFT');
+                }}
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  uploadShiftType === 'MID_SHIFT'
+                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Interim progress, superseded at shift finish"
+              >
+                Mid-Shift
+              </button>
             </div>
           </div>
 
-          {/* Active Shift Cockpit HUD Banner (when shift data is present) */}
+          {/* Clean Driver Identity Header */}
+          <div className="flex items-center justify-between bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800/80">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-sm">
+                AK
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white flex items-center gap-2">
+                  <span>{effectiveDriverName}</span>
+                  {effectiveLanguage !== 'EN' && (
+                    <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800">
+                      {effectiveLanguage === 'PL' && '🇵🇱 PL'}
+                      {effectiveLanguage === 'RO' && '🇷🇴 RO'}
+                      {effectiveLanguage === 'LT' && '🇱🇹 LT'}
+                      {effectiveLanguage === 'BG' && '🇧🇬 BG'}
+                      {effectiveLanguage === 'ES' && '🇪🇸 ES'}
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-slate-400 font-mono">
+                  {effectiveCardNumber} • Class 1 C+E
+                </div>
+              </div>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/30">
+              Card Valid
+            </span>
+          </div>
+
+          {/* Active Shift Cockpit HUD (Tachogram Style 3 Golden Numbers) */}
           {importedDays.length > 0 && (() => {
             const latest = importedDays[0];
             const driveMins = latest.result.dailyDriveMinutes || latest.result.hoursSummary?.drivingMinutes || 0;
@@ -2072,44 +2116,44 @@ Generated via Drive Partners Tacho-Scan`;
             const nextLegalFormatted = `${String(nextH).padStart(2, '0')}:${String(fm || 0).padStart(2, '0')} UTC`;
 
             return (
-              <div className="p-4 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-cyan-500/30 space-y-3 shadow-lg shadow-cyan-950/30">
+              <div className="p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="font-bold text-white uppercase tracking-wider text-[11px]">Active Driver HUD</span>
+                    <span className="font-bold text-white uppercase tracking-wider text-[11px]">Today's Shift</span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700">
-                      {latest.displayDate}
+                      {vehicleReg} • {latest.displayDate}
                     </span>
                   </div>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${isCompliant ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border-rose-500/30'}`}>
-                    {isCompliant ? '✓ 0 INFRINGEMENTS' : '⚠ INFRINGEMENTS'}
+                  <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${isCompliant ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'}`}>
+                    {isCompliant ? '✓ 0 Infringements' : '⚠ Infringements'}
                   </span>
                 </div>
 
                 {/* 3 Golden Numbers Grid */}
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2.5 rounded-2xl bg-slate-950/70 border border-slate-800">
-                    <div className="text-[10px] font-mono text-slate-400 uppercase">Drive Left</div>
-                    <div className="text-base sm:text-lg font-black text-amber-300 mt-0.5 font-mono">
+                <div className="grid grid-cols-3 gap-2.5 text-center">
+                  <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800">
+                    <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Drive Left</div>
+                    <div className="text-lg sm:text-2xl font-black text-amber-400 mt-1 font-mono">
                       {Math.floor(remainingMins / 60)}h {remainingMins % 60}m
                     </div>
-                    <div className="text-[9px] text-slate-500 font-mono">of 9h 00m cap</div>
+                    <div className="text-[9px] text-slate-500 font-mono mt-0.5">of 9h cap</div>
                   </div>
 
-                  <div className="p-2.5 rounded-2xl bg-slate-950/70 border border-slate-800">
-                    <div className="text-[10px] font-mono text-slate-400 uppercase">Continuous</div>
-                    <div className="text-base sm:text-lg font-black text-emerald-400 mt-0.5 font-mono">
+                  <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800">
+                    <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Continuous</div>
+                    <div className="text-lg sm:text-2xl font-black text-emerald-400 mt-1 font-mono">
                       4h 30m
                     </div>
-                    <div className="text-[9px] text-slate-500 font-mono">Break reset clean</div>
+                    <div className="text-[9px] text-slate-500 font-mono mt-0.5">Break reset clean</div>
                   </div>
 
-                  <div className="p-2.5 rounded-2xl bg-slate-950/70 border border-slate-800">
-                    <div className="text-[10px] font-mono text-slate-400 uppercase">Next Start</div>
-                    <div className="text-base sm:text-lg font-black text-cyan-300 mt-0.5 font-mono">
+                  <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800">
+                    <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Next Start</div>
+                    <div className="text-lg sm:text-2xl font-black text-cyan-400 mt-1 font-mono">
                       {nextLegalFormatted}
                     </div>
-                    <div className="text-[9px] text-slate-500 font-mono">11h rest done</div>
+                    <div className="text-[9px] text-slate-500 font-mono mt-0.5">11h rest done</div>
                   </div>
                 </div>
 
@@ -2118,177 +2162,93 @@ Generated via Drive Partners Tacho-Scan`;
                   <button
                     onClick={() => {
                       audioFeedback.playCheckpointClick();
-                      const txt = `DRIVEPARTNERS SHIFT REPORT - ${latest.displayDate}\nDriver: ${latest.result.driverName} (Card: ${latest.result.driverCardNumber})\nVehicle: ${vehicleReg}\nShift Window: 06:16 - ${finishTime} UTC\nDriving: ${Math.floor(driveMins / 60)}h ${driveMins % 60}m (${latest.distanceDrivenMiles} mi / ${latest.distanceDrivenKm} km)\nWork: ${Math.floor(workMins / 60)}h ${workMins % 60}m\nRest: ${Math.floor(restMins / 60)}h ${restMins % 60}m\nStatus: 100% Compliant (0 Infringements)\nNext Legal Start: ${nextLegalFormatted}`;
+                      const txt = `DRIVEPARTNERS SHIFT REPORT - ${latest.displayDate}\nDriver: ${latest.result.driverName} (Card: ${latest.result.driverCardNumber})\nVehicle: ${vehicleReg}\nShift: 06:16 - ${finishTime} UTC\nDriving: ${Math.floor(driveMins / 60)}h ${driveMins % 60}m (${latest.distanceDrivenMiles} mi / ${latest.distanceDrivenKm} km)\nWork: ${Math.floor(workMins / 60)}h ${workMins % 60}m\nRest: ${Math.floor(restMins / 60)}h ${restMins % 60}m\nStatus: 100% Compliant (0 Infringements)\nNext Legal Start: ${nextLegalFormatted}`;
                       navigator.clipboard.writeText(txt);
-                      showToast('✓ Shift summary copied to clipboard for WhatsApp/Dispatch!');
+                      showToast('✓ Shift summary copied for WhatsApp / Dispatch!');
                     }}
                     className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono font-bold text-slate-200 hover:text-white flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                   >
                     <Share2 className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Copy for WhatsApp / Dispatch</span>
+                    <span>Copy for WhatsApp</span>
                   </button>
                   <button
                     onClick={() => {
                       audioFeedback.playCheckpointClick();
                       setIsVisualReportsHubOpen(true);
                     }}
-                    className="py-2 px-3 rounded-xl bg-cyan-600/30 hover:bg-cyan-600/50 border border-cyan-500/40 text-xs font-mono font-bold text-cyan-300 flex items-center gap-1 transition-all cursor-pointer"
+                    className="py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-cyan-900/30"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Reports</span>
+                    <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                    <span>Shift Trace</span>
                   </button>
                 </div>
               </div>
             );
           })()}
 
-          {/* Shift Ingestion Mode: End-of-Shift (Final Authoritative) vs Mid-Shift Progression */}
-          <div className="p-3.5 rounded-2xl cockpit-panel border-amber-500/30 space-y-2.5">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-300 font-bold flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-amber-400" />
-                <span>Upload Shift State:</span>
-              </span>
-              <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-                End-of-Shift / Mid-Shift Upload Data
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  audioFeedback.playCheckpointClick();
-                  setUploadShiftType('END_OF_SHIFT');
-                }}
-                className={`p-2.5 rounded-xl border text-xs text-left transition-all cursor-pointer ${
-                  uploadShiftType === 'END_OF_SHIFT'
-                    ? 'bg-emerald-500/15 border-emerald-400 text-white font-bold ring-1 ring-emerald-400/40 shadow-sm'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-emerald-300 font-bold text-[11px]">End of Shift (Final)</span>
-                  {uploadShiftType === 'END_OF_SHIFT' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">Authoritative daily record</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  audioFeedback.playCheckpointClick();
-                  setUploadShiftType('MID_SHIFT');
-                }}
-                className={`p-2.5 rounded-xl border text-xs text-left transition-all cursor-pointer ${
-                  uploadShiftType === 'MID_SHIFT'
-                    ? 'bg-amber-500/15 border-amber-400 text-white font-bold ring-1 ring-amber-400/40 shadow-sm'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-amber-300 font-bold text-[11px]">Mid-Shift Progression</span>
-                  {uploadShiftType === 'MID_SHIFT' && <Check className="w-3.5 h-3.5 text-amber-400" />}
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">Superseded by end of shift</div>
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-400 leading-relaxed font-mono">
-              ⚖️ <strong>Legal Precedence:</strong> If uploaded mid-shift, your final end-of-shift scan will become the authoritative record. Manual inputs are legally irrelevant.
-            </p>
-          </div>
-
-          {/* Universal Multi-Manufacturer & Multi-Drop Ingestion Tip */}
-          <div className="p-3 rounded-2xl bg-cyan-950/30 border border-cyan-500/30 flex items-center gap-2.5 text-xs font-mono text-cyan-200">
-            <ZoomIn className="w-4 h-4 text-cyan-400 shrink-0" />
-            <div className="text-[11px] leading-tight">
-              <strong>Multi-Drop or Long Roll?</strong> Universal support for Stoneridge, VDO DTCO, and Actia. For long 40–60cm rolls, align the bottom 10cm <strong>Daily Totals Summary Block</strong> (wheel, hammers, bed symbols) for rapid OCR.
-            </div>
-          </div>
-
-          {/* Core Choices Specified by User */}
+          {/* Core Ingestion Actions (2 Clean Tachogram Style Cards) */}
           <div className="space-y-3">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
+              Add Shift Data
+            </div>
+
             {/* 1. Scan Printout (Camera) */}
             <button
               onClick={() => {
                 audioFeedback.playCheckpointClick();
                 setView('FULLSCREEN_SCAN');
               }}
-              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-amber-400 border-amber-500/40 hover:border-amber-400 flex items-center justify-between transition-all group text-left cursor-pointer shadow-glow-amber touch-press"
+              className="w-full p-4 sm:p-5 rounded-3xl bg-slate-900 hover:bg-slate-850 border border-amber-500/40 hover:border-amber-400 flex items-center justify-between transition-all group text-left cursor-pointer shadow-lg shadow-amber-500/5 touch-press"
             >
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md shadow-amber-500/30">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md shadow-amber-500/30">
                   <Camera className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="text-base font-black text-white group-hover:text-amber-300 flex items-center gap-2">
-                    <span>Scan Printout</span>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
-                      <Zap className="w-2.5 h-2.5 fill-amber-400" /> Anti-Shadow Flash
+                    <span>Scan Paper Printout</span>
+                    <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
+                      Camera OCR
                     </span>
                   </div>
-                  <div className="text-xs text-slate-400">
-                    Hands-free full screen camera scanner with shadow-reduction flash
+                  <div className="text-xs text-slate-400 mt-0.5">
+                    Photograph daily Stoneridge or VDO thermal roll
                   </div>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            {/* 2. Card Reader */}
+            {/* 2. Card Reader (.DDD) */}
             <button
               onClick={() => {
                 audioFeedback.playCheckpointClick();
                 setView('CARD_READER_VIEW');
               }}
-              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-blue-400 border-blue-500/30 hover:border-blue-400/80 flex items-center justify-between transition-all group text-left cursor-pointer touch-press shadow-sm"
+              className="w-full p-4 sm:p-5 rounded-3xl bg-slate-900 hover:bg-slate-850 border border-blue-500/30 hover:border-blue-400/80 flex items-center justify-between transition-all group text-left cursor-pointer shadow-lg shadow-blue-500/5 touch-press"
             >
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
                   <CreditCard className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="text-base font-bold text-white group-hover:text-blue-300 flex items-center gap-2">
-                    <span>Card Reader (.DDD)</span>
+                    <span>Download Driver Card</span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                      USB-C / File
+                      USB-C / .DDD
                     </span>
                   </div>
-                  <div className="text-xs text-slate-400">
-                    Connect card reader of your choice or upload .DDD file (Golden Master)
+                  <div className="text-xs text-slate-400 mt-0.5">
+                    Connect smartcard reader or upload raw .DDD file
                   </div>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-transform" />
             </button>
+          </div>
 
-            {/* 3. Visual Reports & Strategy Hub */}
-            <button
-              onClick={() => {
-                audioFeedback.playCheckpointClick();
-                setIsVisualReportsHubOpen(true);
-              }}
-              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-cyan-400 border-cyan-500/30 hover:border-cyan-400/80 flex items-center justify-between transition-all group text-left cursor-pointer touch-press shadow-sm"
-            >
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
-                  <Sparkles className="w-6 h-6 text-amber-300" />
-                </div>
-                <div>
-                  <div className="text-base font-bold text-white group-hover:text-cyan-300 flex items-center gap-2">
-                    <span>Visual Reports &amp; Strategy Hub</span>
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                      AI CO-PILOT
-                    </span>
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    24h Activity Ribbon, 28-day DVSA Dossier, Hours Strategy &amp; Vehicle Ledger
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            {/* 4. See Dashboard */}
+          {/* Quick Access Dock (3 Clean Tiles) */}
+          <div className="grid grid-cols-3 gap-2.5 pt-1">
             <button
               onClick={() => {
                 audioFeedback.playCheckpointClick();
@@ -2298,127 +2258,74 @@ Generated via Drive Partners Tacho-Scan`;
                   setView('DAYS_OVERVIEW');
                 }
               }}
-              className="w-full p-4 rounded-2xl cockpit-panel border-t-2 border-t-emerald-400 border-emerald-500/30 hover:border-emerald-400/80 flex items-center justify-between transition-all group text-left cursor-pointer touch-press shadow-sm"
+              className="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-slate-850 border border-slate-800 text-center transition-all cursor-pointer group shadow-sm"
             >
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
-                  <Activity className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-base font-bold text-white group-hover:text-emerald-300 flex items-center gap-2">
-                    <span>See Dashboard</span>
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      {importedDays.length} {importedDays.length === 1 ? 'day' : 'days'}
-                    </span>
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    Review 28-day compliance timeline, mileage &amp; hours ledger
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-transform" />
+              <Calendar className="w-5 h-5 mx-auto text-emerald-400 group-hover:scale-110 transition-transform mb-1.5" />
+              <div className="text-xs font-bold text-white">Shifts</div>
+              <div className="text-[10px] text-slate-400 font-mono">{importedDays.length} recorded</div>
             </button>
 
-            {/* Secondary Options Divider */}
-            <div className="pt-2 border-t border-slate-800/80">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
-                Additional Tools &amp; Upload Methods
-              </span>
-            </div>
+            <button
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setIsVisualReportsHubOpen(true);
+              }}
+              className="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-slate-850 border border-slate-800 text-center transition-all cursor-pointer group shadow-sm"
+            >
+              <Sparkles className="w-5 h-5 mx-auto text-cyan-400 group-hover:scale-110 transition-transform mb-1.5" />
+              <div className="text-xs font-bold text-white">Reports</div>
+              <div className="text-[10px] text-slate-400 font-mono">Visual Hub</div>
+            </button>
 
-            {/* Upload Printout (Photo Library) */}
+            <button
+              onClick={() => {
+                audioFeedback.playCheckpointClick();
+                setIsDvsaDossierOpen(true);
+              }}
+              className="p-3.5 rounded-2xl bg-slate-900/90 hover:bg-slate-850 border border-slate-800 text-center transition-all cursor-pointer group shadow-sm"
+            >
+              <ShieldCheck className="w-5 h-5 mx-auto text-amber-400 group-hover:scale-110 transition-transform mb-1.5" />
+              <div className="text-xs font-bold text-white">Roadside</div>
+              <div className="text-[10px] text-slate-400 font-mono">DVSA Pass</div>
+            </button>
+          </div>
+
+          {/* Subtle Auxiliary Links Footer */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-slate-500">
             <button
               onClick={() => {
                 audioFeedback.playCheckpointClick();
                 setView('UPLOAD_VIEW');
               }}
-              className="w-full p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800 flex items-center justify-between transition-all group text-left cursor-pointer touch-press"
+              className="hover:text-slate-300 transition-colors cursor-pointer flex items-center gap-1"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center">
-                  <Upload className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-white group-hover:text-slate-200">
-                    Upload from Photo Library / File
-                  </div>
-                  <div className="text-[11px] text-slate-400">
-                    Select a previously saved receipt image from your phone
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-slate-300" />
+              <Upload className="w-3 h-3" />
+              <span>Photo library</span>
             </button>
-
-            {/* Scanning Tips Animated Video */}
+            <span>•</span>
             <button
               onClick={() => {
                 audioFeedback.playCheckpointClick();
                 setIsScanningTipsModalOpen(true);
               }}
-              className="w-full p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800 flex items-center justify-between transition-all group text-left cursor-pointer touch-press"
+              className="hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
-                  <Play className="w-4 h-4 fill-amber-400" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-white group-hover:text-amber-300 flex items-center gap-2">
-                    <span>Scanning Tips &amp; Best Practices</span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                      Video
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-400">
-                    Flash shadow reduction, roll flattening &amp; laser alignment
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400" />
+              <Play className="w-3 h-3 fill-current" />
+              <span>Tips video</span>
             </button>
-
-            {/* 5. Switch to Autonomous DVSA Vehicle-Check */}
-            {onSwitchToVehicleCheck && (
-              <button
-                onClick={() => {
-                  audioFeedback.playCheckpointClick();
-                  onSwitchToVehicleCheck();
-                }}
-                className="w-full p-4 rounded-2xl cockpit-panel border border-slate-800 hover:border-emerald-500/40 flex items-center justify-between transition-all group text-left cursor-pointer shadow-sm touch-press"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
-                    <Truck className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="text-base font-bold text-white group-hover:text-emerald-300 flex items-center gap-2">
-                      <span>Vehicle-Check (DVSA)</span>
-                      <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                        AI Walkaround
-                      </span>
-                    </div>
-                    <div className="text-xs text-slate-400">
-                      Wheel nuts, laser tread, 5th-wheel dog clip &amp; acoustic air leaks
-                    </div>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-transform" />
-              </button>
+            {importedDays.length > 0 && (
+              <>
+                <span>•</span>
+                <button
+                  onClick={handleClearAllData}
+                  className="hover:text-rose-400 transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Clear data</span>
+                </button>
+              </>
             )}
           </div>
-
-          {/* Clear Stored Data Button */}
-          {importedDays.length > 0 && (
-            <div className="pt-2 text-center">
-              <button
-                onClick={handleClearAllData}
-                className="text-xs font-mono text-slate-500 hover:text-rose-400 flex items-center justify-center gap-1.5 mx-auto transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Clear Stored Data (Reset for Re-upload)</span>
-              </button>
-            </div>
-          )}
         </main>
       )}
 
@@ -2894,68 +2801,43 @@ Generated via Drive Partners Tacho-Scan`;
       {/* ========================================================================= */}
       {view === 'DAYS_OVERVIEW' && (
         <main className="flex-1 max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-6">
-          {/* Top Bar with Report Buttons */}
+          {/* Top Bar with Clean Tachogram Actions */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-4">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/15 px-2.5 py-0.5 rounded-full border border-amber-500/30">
-                  Tacho-Scan Dashboard
+                  Shift Ledger
                 </span>
                 <span className="text-xs font-mono text-slate-400">
-                  {importedDays.length} / 14 Days Stored (2-Week Ledger)
+                  {effectiveDriverName} • {importedDays.length} Days Stored
                 </span>
               </div>
-              <h2 className="text-2xl font-black text-white mt-1">Overview of Imported Days</h2>
+              <h2 className="text-2xl font-black text-white mt-1">Shift History &amp; Compliance</h2>
             </div>
 
-            {/* Quick Action Tools Bar */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Clean Action Bar (3 Primary Buttons + More Dropdown) */}
+            <div className="flex items-center gap-2 relative">
+              <button
+                onClick={() => {
+                  audioFeedback.playCheckpointClick();
+                  setView('ACTION_MENU');
+                }}
+                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              >
+                <ScanLine className="w-4 h-4" />
+                <span>+ Scan Shift</span>
+              </button>
+
               <button
                 onClick={() => {
                   audioFeedback.playCheckpointClick();
                   setIsVisualReportsHubOpen(true);
                 }}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-cyan-600/25 transition-all cursor-pointer touch-press"
+                className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-cyan-900/30 transition-all cursor-pointer"
                 title="Open Visual Reports & Strategy Hub"
               >
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>Visual Reports Hub</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  audioFeedback.playCheckpointClick();
-                  setIsSmartDebriefOpen(true);
-                }}
-                className="px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-600/25 transition-all cursor-pointer touch-press"
-                title="Open AI Smart Debrief & Plain-English Coaching"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>AI Smart Debrief</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  audioFeedback.playCheckpointClick();
-                  setIsCircadianModalOpen(true);
-                }}
-                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-rose-300 font-bold text-xs border border-rose-500/30 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
-                title="Circadian Rhythm & Fatigue Index"
-              >
-                <HeartPulse className="w-3.5 h-3.5 text-rose-400" />
-                <span>Fatigue Index</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  audioFeedback.playCheckpointClick();
-                  setIsOfficerPassOpen(true);
-                }}
-                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-emerald-300 font-bold text-xs border border-emerald-500/30 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
-                title="Instant Officer Roadside Pass"
-              >
-                <QrCode className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Roadside Pass</span>
+                <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                <span>Reports Hub</span>
               </button>
 
               <button
@@ -2963,92 +2845,211 @@ Generated via Drive Partners Tacho-Scan`;
                   audioFeedback.playCheckpointClick();
                   setIsDvsaDossierOpen(true);
                 }}
-                className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer touch-press"
-                title="Open 1-Tap DVSA Roadside Inspection Dossier"
+                className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-emerald-300 border border-emerald-500/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                title="1-Tap DVSA Roadside Inspection Dossier"
               >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>DVSA Dossier (PDF)</span>
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>DVSA Dossier</span>
               </button>
 
-              <button
-                onClick={() => {
-                  audioFeedback.playCheckpointClick();
-                  setArt12SelectedDateKey(importedDays[0]?.dateKey || '');
-                  setIsArt12ModalOpen(true);
-                }}
-                className="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-bold text-xs border border-amber-500/30 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
-                title="Log EU 561/2006 Article 12 Emergency Concession"
-              >
-                <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-                <span>Article 12 Defense</span>
-              </button>
+              {/* Overflow 'More Actions' Button */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsMoreMenuOpen((prev) => !prev)}
+                  className={`p-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                    isMoreMenuOpen
+                      ? 'bg-slate-800 border-amber-400 text-amber-300'
+                      : 'bg-slate-900 hover:bg-slate-850 border-slate-800 text-slate-300'
+                  }`}
+                  title="More actions and advanced tools"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                  <span className="hidden sm:inline text-xs font-mono">More</span>
+                </button>
 
-              <button
-                onClick={() => {
-                  audioFeedback.playCheckpointClick();
-                  setIsTimesheetModalOpen(true);
-                }}
-                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-cyan-300 font-bold text-xs border border-cyan-500/30 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
-                title="Weekly Worked Hours & Payroll Summary"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Timesheet</span>
-              </button>
+                {/* Dropdown Menu Popover */}
+                {isMoreMenuOpen && (
+                  <div className="absolute right-0 top-12 z-40 w-64 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 space-y-1 animate-in fade-in zoom-in-95 duration-150">
+                    <button
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setIsMoreMenuOpen(false);
+                        setIsSmartDebriefOpen(true);
+                      }}
+                      className="w-full px-3 py-2 rounded-xl hover:bg-slate-800 text-left text-xs text-purple-300 flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <Sparkles className="w-4 h-4 text-purple-400" />
+                      <span>AI Smart Debrief &amp; Coach</span>
+                    </button>
 
-              <button
-                onClick={() => {
-                  audioFeedback.playCheckpointClick();
-                  setIsVaultModalOpen(true);
-                }}
-                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-slate-300 font-bold text-xs border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
-                title="Faded Thermal Paper Digital Photo Vault"
-              >
-                <Camera className="w-3.5 h-3.5" />
-                <span>Roll Vault</span>
-              </button>
+                    <button
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setIsMoreMenuOpen(false);
+                        setIsCircadianModalOpen(true);
+                      }}
+                      className="w-full px-3 py-2 rounded-xl hover:bg-slate-800 text-left text-xs text-rose-300 flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <HeartPulse className="w-4 h-4 text-rose-400" />
+                      <span>Fatigue &amp; Circadian Rhythm</span>
+                    </button>
 
-              <button
-                onClick={() => {
-                  audioFeedback.playCheckpointClick();
-                  handleExportDddFile();
-                }}
-                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 text-slate-300 font-bold text-xs border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer touch-press"
-                title="Download raw .DDD cryptographic file"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>.DDD</span>
-              </button>
+                    <button
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setIsMoreMenuOpen(false);
+                        setIsOfficerPassOpen(true);
+                      }}
+                      className="w-full px-3 py-2 rounded-xl hover:bg-slate-800 text-left text-xs text-emerald-300 flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <QrCode className="w-4 h-4 text-emerald-400" />
+                      <span>Roadside Inspection QR Pass</span>
+                    </button>
 
-              {/* AI Self-Learning Engine Performance Telemetry Button */}
-              <button
-                onClick={() => {
-                  setActiveAiRecord(importedDays[0] || null);
-                  setIsAiInspectorOpen(true);
-                }}
-                className="px-3 py-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 font-bold text-xs border border-purple-500/30 flex items-center gap-1.5 shadow-md shadow-purple-500/10 transition-all cursor-pointer"
-                title="View Gemini AI Neural Vision Learning Telemetry"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                <span>AI Neural Engine</span>
-              </button>
+                    <button
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setIsMoreMenuOpen(false);
+                        setArt12SelectedDateKey(importedDays[0]?.dateKey || '');
+                        setIsArt12ModalOpen(true);
+                      }}
+                      className="w-full px-3 py-2 rounded-xl hover:bg-slate-800 text-left text-xs text-amber-300 flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <ShieldAlert className="w-4 h-4 text-amber-400" />
+                      <span>Article 12 Emergency Defense</span>
+                    </button>
 
-              <button
-                onClick={() => setView('ACTION_MENU')}
-                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 transition-all cursor-pointer"
-              >
-                <ScanLine className="w-3.5 h-3.5" />
-                <span>Add Day</span>
-              </button>
+                    <button
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setIsMoreMenuOpen(false);
+                        setIsTimesheetModalOpen(true);
+                      }}
+                      className="w-full px-3 py-2 rounded-xl hover:bg-slate-800 text-left text-xs text-cyan-300 flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-cyan-400" />
+                      <span>Payroll Timesheet</span>
+                    </button>
 
-              <button
-                onClick={handleClearAllData}
-                className="p-2 rounded-xl bg-slate-900 hover:bg-rose-950 text-slate-500 hover:text-rose-400 border border-slate-800 hover:border-rose-500/40 transition-all cursor-pointer"
-                title="Clear all stored data to re-upload"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+                    <button
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setIsMoreMenuOpen(false);
+                        setIsVaultModalOpen(true);
+                      }}
+                      className="w-full px-3 py-2 rounded-xl hover:bg-slate-800 text-left text-xs text-slate-300 flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <Camera className="w-4 h-4 text-slate-400" />
+                      <span>Digital Roll Photo Vault</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setIsMoreMenuOpen(false);
+                        handleExportDddFile();
+                      }}
+                      className="w-full px-3 py-2 rounded-xl hover:bg-slate-800 text-left text-xs text-blue-300 flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <Download className="w-4 h-4 text-blue-400" />
+                      <span>Export Raw .DDD Card File</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        audioFeedback.playCheckpointClick();
+                        setIsMoreMenuOpen(false);
+                        setActiveAiRecord(importedDays[0] || null);
+                        setIsAiInspectorOpen(true);
+                      }}
+                      className="w-full px-3 py-2 rounded-xl hover:bg-slate-800 text-left text-xs text-purple-300 flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <Sparkles className="w-4 h-4 text-purple-400" />
+                      <span>AI Neural Telemetry</span>
+                    </button>
+
+                    <div className="pt-1 border-t border-slate-800">
+                      <button
+                        onClick={() => {
+                          setIsMoreMenuOpen(false);
+                          handleClearAllData();
+                        }}
+                        className="w-full px-3 py-2 rounded-xl hover:bg-rose-950/40 text-left text-xs text-rose-400 flex items-center gap-2 cursor-pointer transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Clear All Stored Data</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Tachogram-Style Weekly Compliance Summary Cards */}
+          {importedDays.length > 0 && (() => {
+            const totalWeeklyMins = importedDays.reduce(
+              (acc, d) => acc + (d.result.dailyDriveMinutes || d.result.hoursSummary?.drivingMinutes || 0),
+              0
+            );
+            const weeklyHours = Math.floor(totalWeeklyMins / 60);
+            const weeklyRemainderMins = totalWeeklyMins % 60;
+            const weeklyCapMins = 56 * 60;
+            const weeklyProgressPct = Math.min(100, Math.round((totalWeeklyMins / weeklyCapMins) * 100));
+
+            return (
+              <div className="p-4 sm:p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-3 shadow-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white uppercase tracking-wider text-[11px]">
+                      Weekly Driving &amp; Flexibility Bank
+                    </span>
+                    <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50">
+                      EU 561/2006
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-amber-400">
+                    {weeklyHours}h {weeklyRemainderMins}m / 56h 00m ({weeklyProgressPct}%)
+                  </span>
+                </div>
+
+                {/* Visual Progress Bar */}
+                <div className="h-2.5 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 rounded-full transition-all duration-300"
+                    style={{ width: `${weeklyProgressPct}%` }}
+                  />
+                </div>
+
+                {/* 3 Glanceable Tachogram Counters */}
+                <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono pt-1">
+                  <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+                    <div className="text-[10px] text-slate-400 uppercase">10h Drives Left</div>
+                    <div className="text-base sm:text-lg font-black text-amber-300 mt-0.5 font-mono">
+                      2 of 2
+                    </div>
+                    <div className="text-[9px] text-slate-500">Available this week</div>
+                  </div>
+
+                  <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+                    <div className="text-[10px] text-slate-400 uppercase">9h Reduced Rests</div>
+                    <div className="text-base sm:text-lg font-black text-emerald-400 mt-0.5 font-mono">
+                      3 of 3
+                    </div>
+                    <div className="text-[9px] text-slate-500">Available this week</div>
+                  </div>
+
+                  <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+                    <div className="text-[10px] text-slate-400 uppercase">Audit Status</div>
+                    <div className="text-base sm:text-lg font-black text-cyan-300 mt-0.5 font-mono">
+                      100% Legal
+                    </div>
+                    <div className="text-[9px] text-slate-500">0 Infringements</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* AI Smart Debrief & Circadian Coach Banner (When data exists) */}
           {importedDays.length > 0 && (() => {
@@ -3512,7 +3513,7 @@ Generated via Drive Partners Tacho-Scan`;
                     : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
                 }`}
               >
-                {selectedDayRecord.result.wtdCompliant ? '✓ EU 561/2006 COMPLIANT' : '⚠ INFRINGEMENTS RECORDED'}
+                {selectedDayRecord.result.wtdCompliant ? '✓ 100% Legal Shift' : '⚠ Infringement Logged'}
               </span>
             </div>
 
@@ -3528,8 +3529,8 @@ Generated via Drive Partners Tacho-Scan`;
                     }`}
                   >
                     {selectedDayRecord.shiftType === 'MID_SHIFT'
-                      ? '🟡 MID-SHIFT PROGRESSION (INTERMEDIATE)'
-                      : '🟢 END OF SHIFT (FINAL AUTHORITATIVE)'}
+                      ? '🟡 Mid-Shift Progression'
+                      : '🟢 End of Shift (Final)'}
                   </span>
                   <span className="text-slate-400 text-[11px]">
                     Uploaded: {new Date(selectedDayRecord.importedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
@@ -3727,13 +3728,13 @@ Generated via Drive Partners Tacho-Scan`;
                     let label = 'Rest / Break';
                     if (act.activityType === 'DRIVING') {
                       badgeColor = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
-                      label = 'Driving (Wheel)';
+                      label = 'Driving';
                     } else if (act.activityType === 'WORK') {
                       badgeColor = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
-                      label = 'Other Work (Hammers)';
+                      label = 'Work';
                     } else if (act.activityType === 'AVAILABILITY') {
                       badgeColor = 'bg-purple-500/15 text-purple-300 border-purple-500/30';
-                      label = 'Period of Availability (POA)';
+                      label = 'Availability';
                     }
 
                     const displayStart = convertUtcToLocal(act.timeStart, timeDisplayMode);

@@ -158,24 +158,24 @@ export const TachoVisualReportsHub: React.FC<TachoVisualReportsHubProps> = ({
 
   // AI Event annotator helper
   const getAiActivityTag = (act: any, idx: number) => {
-    if (act.activityType === 'WORK' && idx <= 2) return 'Pre-use Walkaround Defect Check (DVSA §2.1)';
+    if (act.activityType === 'WORK' && idx <= 2) return 'Pre-use Vehicle Walkaround Check';
     if (act.activityType === 'REST' && act.durationMinutes >= 45) {
-      return `Qualifying Statutory Daily Break (${act.durationMinutes}m — exceeds 45m rule)`;
+      return `Full Driver Break (${act.durationMinutes}m — drive reset)`;
     }
     if (act.activityType === 'REST' && act.durationMinutes >= 15 && act.durationMinutes < 30) {
-      return 'Split Break Part 1 (15m statutory qualifying)';
+      return 'Split Break Part 1 (15m qualifying)';
     }
     if (act.activityType === 'DRIVING' && act.durationMinutes > 60) {
-      return `Motorway Trunk Transit (${fmtMins(act.durationMinutes)} @ 84 km/h)`;
+      return `Highway Driving (${fmtMins(act.durationMinutes)} @ 84 km/h)`;
     }
     if (act.activityType === 'WORK' && act.durationMinutes > 15) {
-      return 'Loading Bay / Coupling & Paperwork';
+      return 'Loading / Unloading & Checks';
     }
     if (act.activityType === 'DRIVING' && act.durationMinutes < 10) {
-      return 'Depot Maneuvering / Shunting';
+      return 'Yard Maneuvering / Shunting';
     }
     if (act.activityType === 'REST' && parseMinute(act.timeStart) > 1000) {
-      return 'Daily Statutory Rest (EU 561/2006 Art. 8)';
+      return 'Daily Rest Period';
     }
     return `${act.activityType}: ${fmtMins(act.durationMinutes)}`;
   };
