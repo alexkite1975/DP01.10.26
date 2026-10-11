@@ -95,279 +95,269 @@ function DriverInCabHubContent() {
     );
   }
 
-  // Primary View: High-Precision Cockpit Nerve Center
+  // Primary View: Clean Driver Dashboard (Tachogram-inspired layout)
   return (
-    <div className="min-h-dvh bg-slate-950 text-white flex flex-col font-sans bg-cockpit-grid">
-      {/* Mobile Sticky Cab Header */}
-      <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3 shadow-cockpit">
+    <div className="min-h-dvh bg-slate-950 text-white flex flex-col font-sans">
+      {/* Clean Driver Header */}
+      <header className="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 py-3">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-mono font-bold tracking-widest uppercase text-cyan-400 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-              DRIVEPARTNERS COCKPIT
-            </div>
-            <h1 className="text-base font-bold text-white tracking-tight">Driver In-Cab Hub</h1>
+            <h1 className="text-base font-bold text-white tracking-tight">Driver Dashboard</h1>
+            <p className="text-[11px] text-slate-400 font-mono">Alexander James Kite • Class 1 C+E</p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-800/60">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-mono font-bold text-emerald-400">1Hz LINK</span>
-            </div>
-            <span className="text-[11px] font-mono font-bold text-slate-100 bg-slate-800/90 px-2.5 py-1 rounded-lg border border-slate-700 shadow-inner">
+            <span className="text-xs font-mono font-bold text-slate-200 bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">
               GN21 EVX
             </span>
           </div>
         </div>
       </header>
 
-      {/* Main Mobile Screen Body */}
+      {/* Main Content */}
       <main className="flex-1 w-full max-w-md mx-auto p-4 space-y-4">
-        {/* Metallic Statutory DVSA Cab Spec Plaque */}
-        <div className="cockpit-panel rounded-2xl p-4 border border-white/10 shadow-cockpit relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
-          
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-950 to-slate-900 border border-cyan-700/60 text-cyan-400 shadow-glow-cyan">
-                <Truck className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-white uppercase tracking-wider font-mono">
-                    44t Articulated HGV
-                  </span>
-                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60">
-                    6-AXLE
-                  </span>
-                </div>
-                <div className="text-[11px] text-slate-300 font-mono mt-0.5 flex items-center gap-2">
-                  <span>Trailer: <strong className="text-white">TR-8492</strong></span>
-                  <span className="text-slate-600">•</span>
-                  <span className="text-amber-400 font-bold">4.45m / 14&apos; 7&quot;</span>
-                </div>
+        {/* Active Vehicle & Trailer Status Card */}
+        <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-cyan-950 text-cyan-400 border border-cyan-800/60">
+              <Truck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-white">44t Articulated HGV</div>
+              <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                Trailer: <strong className="text-slate-200">TR-8492</strong> • Height: <strong className="text-amber-400">4.45m (14&apos; 7&quot;)</strong>
               </div>
             </div>
+          </div>
+          <Link
+            href="/driver/inspections/select-vehicle"
+            className="text-[10px] font-mono font-bold text-cyan-400 hover:text-cyan-300 bg-cyan-950/60 px-2.5 py-1.5 rounded-lg border border-cyan-800/60 hover:border-cyan-600 transition shrink-0"
+          >
+            CHANGE
+          </Link>
+        </div>
 
-            <Link
-              href="/driver/inspections/select-vehicle"
-              onClick={() => audioFeedback.playCheckpointClick()}
-              className="text-[10px] font-mono font-bold text-cyan-400 hover:text-cyan-300 bg-cyan-950/60 px-2.5 py-1 rounded-lg border border-cyan-800/60 hover:border-cyan-600 transition touch-press shrink-0"
-            >
-              CHANGE
-            </Link>
+        {/* Tachograph Quick Status (The 3 Golden Numbers) */}
+        <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+              Shift Compliance Status
+            </span>
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60">
+              0 INFRINGEMENTS
+            </span>
           </div>
 
-          {/* Quick Telemetry Status Ticker */}
-          <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400">
-            <div className="flex items-center gap-1.5">
-              <Radio className="w-3 h-3 text-cyan-400" />
-              <span>GPS: <strong className="text-slate-300">52.334° N, 1.083° W</strong></span>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+              <div className="text-[10px] font-mono text-slate-400">Drive Left</div>
+              <div className="text-base font-black text-cyan-400 font-mono mt-0.5">0h 18m</div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Activity className="w-3 h-3 text-emerald-400" />
-              <span>Speed: <strong className="text-emerald-400 font-bold">0 MPH (STATIONARY)</strong></span>
+            <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+              <div className="text-[10px] font-mono text-slate-400">Continuous</div>
+              <div className="text-base font-black text-amber-400 font-mono mt-0.5">4h 30m</div>
             </div>
+            <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+              <div className="text-[10px] font-mono text-slate-400">Next Start</div>
+              <div className="text-base font-black text-emerald-400 font-mono mt-0.5">04:26</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <Link
+              href="/driver/tacho"
+              className="py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs font-mono text-center transition flex items-center justify-center gap-1.5"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>Open Tacho</span>
+            </Link>
+            <Link
+              href="/driver/walkaround"
+              className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs font-mono text-center transition flex items-center justify-center gap-1.5 border border-slate-700"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Walkaround</span>
+            </Link>
           </div>
         </div>
 
-        {/* Page-by-Page Navigation Menu (High-Precision Cockpit Cards) */}
-        <div className="space-y-2.5">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
-              Driver Cockpit Workflows
-            </span>
-            <span className="text-[10px] font-mono text-cyan-400">
-              6 MODULES ACTIVE
-            </span>
+        {/* Dedicated Operational Workflows */}
+        <div className="space-y-2">
+          <div className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider px-1">
+            Driver Workflows
           </div>
 
           {/* 1. Driver Walkaround */}
           <Link
             href="/driver/walkaround"
-            onClick={() => audioFeedback.playCheckpointClick()}
-            className="w-full min-h-[72px] p-4 rounded-2xl cockpit-panel hover:border-emerald-500/60 transition-all flex items-center justify-between group shadow-cockpit border border-white/10 touch-press relative overflow-hidden"
+            className="w-full min-h-[68px] p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-emerald-500/50 transition flex items-center justify-between group"
           >
-            <div className="absolute top-0 bottom-0 left-0 w-1 bg-emerald-500 opacity-60 group-hover:opacity-100 transition" />
-            <div className="flex items-center gap-3.5 pl-1">
-              <div className="p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-800/60 text-emerald-400 group-hover:scale-105 group-hover:shadow-glow-emerald transition">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-emerald-950 text-emerald-400 border border-emerald-800/60 group-hover:scale-105 transition">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div className="text-left">
                 <div className="text-sm font-bold text-white flex items-center gap-2">
                   <span>Driver Walkaround</span>
                   <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60">
-                    DVSA MANDATORY
+                    DVSA
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-400 font-sans mt-0.5">
-                  44t interactive vector blueprint • 32-point inspection • Air leak test
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  32-point inspection • Defect photos • Digital sign-off
                 </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition shrink-0" />
+            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition shrink-0" />
           </Link>
 
           {/* 2. Tacho AI & .DDD */}
           <Link
             href="/driver/tacho"
-            onClick={() => audioFeedback.playCheckpointClick()}
-            className="w-full min-h-[72px] p-4 rounded-2xl cockpit-panel hover:border-indigo-500/60 transition-all flex items-center justify-between group shadow-cockpit border border-white/10 touch-press relative overflow-hidden"
+            className="w-full min-h-[68px] p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-indigo-500/50 transition flex items-center justify-between group"
           >
-            <div className="absolute top-0 bottom-0 left-0 w-1 bg-indigo-500 opacity-60 group-hover:opacity-100 transition" />
-            <div className="flex items-center gap-3.5 pl-1">
-              <div className="p-2.5 rounded-xl bg-indigo-950/80 border border-indigo-800/60 text-indigo-400 group-hover:scale-105 group-hover:shadow-glow-blue transition">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-indigo-950 text-indigo-400 border border-indigo-800/60 group-hover:scale-105 transition">
                 <Clock className="w-5 h-5" />
               </div>
               <div className="text-left">
                 <div className="text-sm font-bold text-white flex items-center gap-2">
-                  <span>Tacho AI &amp; SE5000 HUD</span>
+                  <span>Tacho AI &amp; .DDD</span>
                   <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800/60">
-                    EU 561/2006
+                    EU 561
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-400 font-sans mt-0.5">
-                  Stoneridge head-unit simulation • 04h 30m countdown • .DDD scan
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Scan thermal roll • Card download • 28-day DVSA shield
                 </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition shrink-0" />
+            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition shrink-0" />
           </Link>
 
           {/* 3. Bridge & Safety Shield */}
           <Link
             href="/driver/safety"
-            onClick={() => audioFeedback.playCheckpointClick()}
-            className="w-full min-h-[72px] p-4 rounded-2xl cockpit-panel hover:border-amber-500/60 transition-all flex items-center justify-between group shadow-cockpit border border-white/10 touch-press relative overflow-hidden"
+            className="w-full min-h-[68px] p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-amber-500/50 transition flex items-center justify-between group"
           >
-            <div className="absolute top-0 bottom-0 left-0 w-1 bg-amber-500 opacity-60 group-hover:opacity-100 transition" />
-            <div className="flex items-center gap-3.5 pl-1">
-              <div className="p-2.5 rounded-xl bg-amber-950/80 border border-amber-800/60 text-amber-400 group-hover:scale-105 group-hover:shadow-glow-amber transition">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-amber-950 text-amber-400 border border-amber-800/60 group-hover:scale-105 transition">
                 <Shield className="w-5 h-5" />
               </div>
               <div className="text-left">
                 <div className="text-sm font-bold text-white flex items-center gap-2">
                   <span>Bridge &amp; Safety Shield</span>
                   <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60">
-                    GANTRY HUD
+                    RADAR
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-400 font-sans mt-0.5">
-                  Overhead clearance gantry • Low bridge radar • £45/hr demurrage
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Low bridge radar • Running height warning • CB radio
                 </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-1 transition shrink-0" />
+            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition shrink-0" />
           </Link>
 
           {/* 4. HGV Routing & Tours */}
           <Link
             href="/driver/route"
-            onClick={() => audioFeedback.playCheckpointClick()}
-            className="w-full min-h-[72px] p-4 rounded-2xl cockpit-panel hover:border-cyan-500/60 transition-all flex items-center justify-between group shadow-cockpit border border-white/10 touch-press relative overflow-hidden"
+            className="w-full min-h-[68px] p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-cyan-500/50 transition flex items-center justify-between group"
           >
-            <div className="absolute top-0 bottom-0 left-0 w-1 bg-cyan-500 opacity-60 group-hover:opacity-100 transition" />
-            <div className="flex items-center gap-3.5 pl-1">
-              <div className="p-2.5 rounded-xl bg-cyan-950/80 border border-cyan-800/60 text-cyan-400 group-hover:scale-105 group-hover:shadow-glow-cyan transition">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-cyan-950 text-cyan-400 border border-cyan-800/60 group-hover:scale-105 transition">
                 <Navigation className="w-5 h-5" />
               </div>
               <div className="text-left">
                 <div className="text-sm font-bold text-white flex items-center gap-2">
                   <span>HGV Routing &amp; Tours</span>
                   <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/60">
-                    44t TRUCK NAV
+                    44t NAV
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-400 font-sans mt-0.5">
-                  Commercial truck corridors • Axle weights • Relay tour legs
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Commercial truck routing • Axle limits • Tour legs
                 </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition shrink-0" />
+            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition shrink-0" />
           </Link>
 
           {/* 5. Site Risk & Services */}
           <Link
             href="/driver/sites"
-            onClick={() => audioFeedback.playCheckpointClick()}
-            className="w-full min-h-[72px] p-4 rounded-2xl cockpit-panel hover:border-rose-500/60 transition-all flex items-center justify-between group shadow-cockpit border border-white/10 touch-press relative overflow-hidden"
+            className="w-full min-h-[68px] p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-rose-500/50 transition flex items-center justify-between group"
           >
-            <div className="absolute top-0 bottom-0 left-0 w-1 bg-rose-500 opacity-60 group-hover:opacity-100 transition" />
-            <div className="flex items-center gap-3.5 pl-1">
-              <div className="p-2.5 rounded-xl bg-rose-950/80 border border-rose-800/60 text-rose-400 group-hover:scale-105 transition">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-rose-950 text-rose-400 border border-rose-800/60 group-hover:scale-105 transition">
                 <MapPin className="w-5 h-5" />
               </div>
               <div className="text-left">
                 <div className="text-sm font-bold text-white flex items-center gap-2">
                   <span>Site Risk &amp; Services</span>
                   <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800/60">
-                    DEPOT AMENITIES
+                    PARKING
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-400 font-sans mt-0.5">
-                  Motorway services parking • SNAP • Toilets &amp; hot food ratings
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Motorway services parking • SNAP • DC gate guides
                 </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-1 transition shrink-0" />
+            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-0.5 transition shrink-0" />
           </Link>
 
           {/* 6. Relief Driver Shifts (ReliefHGV) */}
           <Link
             href="/driver/shifts"
-            onClick={() => audioFeedback.playCheckpointClick()}
-            className="w-full min-h-[72px] p-4 rounded-2xl cockpit-panel hover:border-teal-500/60 transition-all flex items-center justify-between group shadow-cockpit border border-white/10 touch-press relative overflow-hidden"
+            className="w-full min-h-[68px] p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-teal-500/50 transition flex items-center justify-between group"
           >
-            <div className="absolute top-0 bottom-0 left-0 w-1 bg-teal-500 opacity-60 group-hover:opacity-100 transition" />
-            <div className="flex items-center gap-3.5 pl-1">
-              <div className="p-2.5 rounded-xl bg-teal-950/80 border border-teal-800/60 text-teal-400 group-hover:scale-105 transition">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-teal-950 text-teal-400 border border-teal-800/60 group-hover:scale-105 transition">
                 <UserCheck className="w-5 h-5" />
               </div>
               <div className="text-left">
                 <div className="text-sm font-bold text-white flex items-center gap-2">
                   <span>Relief Driver Shifts</span>
                   <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800/60">
-                    £24.50-£31/hr
+                    IR35 SAFE
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-400 font-sans mt-0.5">
-                  Haulier sickness cover • Night trunks • IR35 Safe-Harbour
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Haulier shift cover • Night trunks • Direct self-billing
                 </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-teal-400 group-hover:translate-x-1 transition shrink-0" />
+            <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-teal-400 group-hover:translate-x-0.5 transition shrink-0" />
           </Link>
         </div>
 
-        {/* Secondary Portal Links (Explicit Links Only) */}
-        <div className="pt-3 border-t border-slate-800/80 space-y-2">
+        {/* Secondary Connected Links */}
+        <div className="pt-2 border-t border-slate-800 space-y-2">
           <div className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider px-1">
             Connected Systems
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Link
               href="/freight"
-              onClick={() => audioFeedback.playCheckpointClick()}
-              className="p-3 rounded-xl cockpit-panel border border-white/10 hover:border-cyan-500/40 transition flex items-center gap-2 text-xs font-semibold text-slate-200 touch-press"
+              className="p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition flex items-center gap-2 text-xs font-semibold text-slate-200"
             >
               <Truck className="w-4 h-4 text-cyan-400" />
-              <span className="truncate">Freight Exchange (HX)</span>
+              <span className="truncate">Freight Exchange</span>
             </Link>
             <Link
               href="/driver/inspections/signoff"
-              onClick={() => audioFeedback.playCheckpointClick()}
-              className="p-3 rounded-xl cockpit-panel border border-white/10 hover:border-emerald-500/40 transition flex items-center gap-2 text-xs font-semibold text-slate-200 touch-press"
+              className="p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition flex items-center gap-2 text-xs font-semibold text-slate-200"
             >
               <FileCheck2 className="w-4 h-4 text-emerald-400" />
               <span className="truncate">Inspection Sign-Off</span>
             </Link>
             <Link
               href="/haulier"
-              onClick={() => audioFeedback.playCheckpointClick()}
-              className="col-span-2 p-3 rounded-xl cockpit-panel border border-white/10 hover:border-amber-500/40 transition flex items-center justify-between text-xs font-semibold text-slate-200 touch-press"
+              className="col-span-2 p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition flex items-center justify-between text-xs font-semibold text-slate-200"
             >
               <span className="flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-amber-400" />
-                <span>Haulier Command Center &amp; Fleet Radar</span>
+                <span>Haulier Command Center</span>
               </span>
               <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
             </Link>

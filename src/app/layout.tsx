@@ -22,10 +22,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark bg-slate-950 text-slate-100">
-      <body className="min-h-dvh antialiased flex flex-col bg-cockpit-grid pb-20 sm:pb-16">
-        <VipPreviewBanner />
+      <body className="min-h-dvh antialiased flex flex-col bg-cockpit-grid">
         {children}
-        <CockpitBottomDock />
       </body>
     </html>
   );
