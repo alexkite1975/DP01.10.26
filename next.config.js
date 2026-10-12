@@ -5,6 +5,9 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  experimental: {
+    serverComponentsExternalPackages: ['@google-cloud/firestore', 'google-gax'],
+  },
   headers: async () => [
     {
       source: '/:path*',
