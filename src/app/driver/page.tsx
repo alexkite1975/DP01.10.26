@@ -1,9 +1,7 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import {
   CheckCircle2,
   Clock,
@@ -25,77 +23,7 @@ import {
 } from 'lucide-react';
 import { audioFeedback } from '@/utils/audioFeedback';
 
-const VehicleCheckApp = dynamic(() => import('@/components/vehicleCheck/VehicleCheckApp'), { ssr: false });
-const TachoScanApp = dynamic(() => import('@/components/tacho/TachoScanApp'), { ssr: false });
-const DriverSafetyShieldHub = dynamic(() => import('@/components/safety/DriverSafetyShieldHub'), { ssr: false });
-const RouteOptimiserApp = dynamic(() => import('@/components/routeOptimiser/RouteOptimiserApp'), { ssr: false });
-const SiteRiskApp = dynamic(() => import('@/components/siterisk/SiteRiskApp'), { ssr: false });
-
-function DriverInCabHubContent() {
-  const searchParams = useSearchParams();
-  const activeTab = searchParams.get('tab');
-
-  if (activeTab === 'walkaround') {
-    return (
-      <div className="min-h-dvh bg-slate-950 p-2 sm:p-4 max-w-2xl mx-auto">
-        <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-2">
-          <Link href="/driver" className="text-xs text-cyan-400 hover:underline">← Back to In-Cab Hub</Link>
-          <span className="text-xs text-slate-400 font-mono">Driver Walkaround</span>
-        </div>
-        <VehicleCheckApp />
-      </div>
-    );
-  }
-
-  if (activeTab === 'tacho') {
-    return (
-      <div className="min-h-dvh bg-slate-950 p-2 sm:p-4 max-w-2xl mx-auto">
-        <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-2">
-          <Link href="/driver" className="text-xs text-cyan-400 hover:underline">← Back to In-Cab Hub</Link>
-          <span className="text-xs text-slate-400 font-mono">Tacho AI & .DDD</span>
-        </div>
-        <TachoScanApp />
-      </div>
-    );
-  }
-
-  if (activeTab === 'safety') {
-    return (
-      <div className="min-h-dvh bg-slate-950 p-2 sm:p-4 max-w-2xl mx-auto">
-        <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-2">
-          <Link href="/driver" className="text-xs text-cyan-400 hover:underline">← Back to In-Cab Hub</Link>
-          <span className="text-xs text-slate-400 font-mono">Bridge & Safety Shield</span>
-        </div>
-        <DriverSafetyShieldHub />
-      </div>
-    );
-  }
-
-  if (activeTab === 'route') {
-    return (
-      <div className="min-h-dvh bg-slate-950 p-2 sm:p-4 max-w-2xl mx-auto">
-        <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-2">
-          <Link href="/driver" className="text-xs text-cyan-400 hover:underline">← Back to In-Cab Hub</Link>
-          <span className="text-xs text-slate-400 font-mono">HGV Routing & Tours</span>
-        </div>
-        <RouteOptimiserApp />
-      </div>
-    );
-  }
-
-  if (activeTab === 'sites') {
-    return (
-      <div className="min-h-dvh bg-slate-950 p-2 sm:p-4 max-w-2xl mx-auto">
-        <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-2">
-          <Link href="/driver" className="text-xs text-cyan-400 hover:underline">← Back to In-Cab Hub</Link>
-          <span className="text-xs text-slate-400 font-mono">Site Risk & Services</span>
-        </div>
-        <SiteRiskApp />
-      </div>
-    );
-  }
-
-  // Primary View: Clean Driver Dashboard (Tachogram-inspired layout)
+export default function DriverPage() {
   return (
     <div className="min-h-dvh bg-slate-950 text-white flex flex-col font-sans">
       {/* Clean Driver Header */}
@@ -368,10 +296,3 @@ function DriverInCabHubContent() {
   );
 }
 
-export default function DriverPage() {
-  return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-400 font-mono text-sm">Loading Driver Hub...</div>}>
-      <DriverInCabHubContent />
-    </Suspense>
-  );
-}
